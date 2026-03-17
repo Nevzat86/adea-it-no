@@ -355,15 +355,62 @@
     }
 
     /* === RESPONSIVE === */
-    @media (max-width: 640px) {
-      .hero { padding: 48px 0 32px; }
-      .hero-icon { font-size: 40px; }
-      .featured-card { flex-direction: column; padding: 32px; gap: 20px; text-align: center; }
-      .featured-emoji { font-size: 48px; }
-      .product-grid { grid-template-columns: 1fr; }
-      .footer-inner { flex-direction: column; }
-      .header-links { gap: 16px; }
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+
+      /* Header */
+      .header-links { gap: 12px; }
       .header-links a:not(.header-cta) { display: none; }
+      .header-cta { padding: 6px 16px; font-size: 14px !important; }
+
+      /* Hero */
+      .hero { padding: 48px 0 28px; }
+      .hero-icon { font-size: 40px; margin-bottom: 16px; }
+      .hero h1 { font-size: 28px; }
+      .hero p { font-size: 16px; }
+
+      /* Featured */
+      .featured { padding: 12px 0 40px; }
+      .featured-card {
+        flex-direction: column;
+        padding: 28px 24px;
+        gap: 16px;
+        text-align: center;
+      }
+      .featured-card::before { width: 200px; height: 200px; }
+      .featured-emoji { font-size: 48px; }
+      .featured-info h2 { font-size: 22px; }
+      .featured-info p { font-size: 15px; }
+      .featured-btn { padding: 10px 24px; font-size: 14px; }
+
+      /* Products */
+      .products { padding: 24px 0 48px; }
+      .section-title { font-size: 24px; margin-bottom: 24px; }
+      .product-grid { grid-template-columns: 1fr; gap: 14px; }
+      .product-card { padding: 22px; }
+      .product-card .emoji { font-size: 28px; margin-bottom: 10px; }
+      .product-card h3 { font-size: 16px; }
+      .product-card p { font-size: 13px; margin-bottom: 10px; }
+
+      /* About */
+      .about { padding: 48px 0; }
+      .about-content h2 { font-size: 24px; }
+      .about-content p { font-size: 15px; }
+
+      /* Footer */
+      .footer-inner {
+        flex-direction: column;
+        gap: 28px;
+      }
+      .footer-brand { font-size: 16px; }
+      .footer-details { font-size: 13px; }
+      .footer-bottom { font-size: 11px; margin-top: 24px; }
+    }
+
+    @media (max-width: 380px) {
+      .hero h1 { font-size: 24px; }
+      .featured-info h2 { font-size: 20px; }
+      .featured-card { padding: 24px 20px; }
     }
   </style>
 </head>
