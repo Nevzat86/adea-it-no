@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adea IT AS &mdash; Programvarestudio i Oslo</title>
+  <meta name="description" content="Adea IT AS utvikler trygge, l&aelig;rerike apper og verkt&oslash;y. Basert i Oslo, Norge. Org.nr 922 689 148.">
+  <meta property="og:title" content="Adea IT AS &mdash; Programvarestudio i Oslo">
+  <meta property="og:description" content="Vi bygger trygge apper for barn og smarte verkt&oslash;y for utviklere. Oslo, Norge.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://adea-it.no">
+  <meta property="og:locale" content="nb_NO">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #F8FAFC;
+      --bg-white: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --accent: #2563EB;
+      --accent-light: #DBEAFE;
+      --border: #E2E8F0;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* === HEADER === */
+    header {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .header-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* === HERO === */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* === COMPANY INFO === */
+    .info-section {
+      padding: 48px 0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .info-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .info-card .label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .info-card .value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .info-card .value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .info-card .value a:hover {
+      text-decoration: underline;
+    }
+
+    /* === PRODUCTS === */
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .product-list {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .product-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .product-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .product-icon.kids { background: #FFF3E0; }
+    .product-icon.dev { background: var(--accent-light); }
+    .product-icon.wp { background: #E8F5E9; }
+
+    .product-info h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .product-info p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .product-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 100px;
+      background: #ECFDF5;
+      color: #059669;
+    }
+
+    .product-tag.review {
+      background: #FEF3C7;
+      color: #D97706;
+    }
+
+    .product-tag.coming {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    /* === ABOUT === */
+    .about-section {
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .about-text {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 640px;
+      line-height: 1.8;
+    }
+
+    /* === FOOTER === */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    .footer-legal {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 600px) {
+      .hero { padding: 48px 0 32px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .product-card { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-inner">
+      <a href="/" class="logo">Adea <span>IT</span> AS</a>
+      <span class="header-meta">Oslo, Norge</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Programvare som gj&oslash;r hverdagen bedre</h1>
+      <p>Adea IT AS er et norsk programvarestudio som bygger trygge apper for barn og smarte verkt&oslash;y for utviklere og bedrifter.</p>
+    </div>
+  </section>
+
+  <section class="info-section">
+    <div class="container">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="label">Selskap</div>
+          <div class="value">Adea IT AS</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Organisasjonsnr.</div>
+          <div class="value">922 689 148</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Lokasjon</div>
+          <div class="value">Oslo, Norge</div>
+        </div>
+        <div class="info-card">
+          <div class="label">Kontakt</div>
+          <div class="value"><a href="mailto:nevzat@adea-it.no">nevzat@adea-it.no</a></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Produkter</h2>
+      <p class="section-desc">Apper og verkt&oslash;y vi har bygget og vedlikeholder.</p>
+
+      <div class="product-list">
+        <div class="product-card">
+          <div class="product-icon kids">🎮</div>
+          <div class="product-info">
+            <h3>Lunelo &mdash; Spill &amp; L&aelig;r</h3>
+            <p>L&aelig;ringsapp for barn 4&ndash;8 &aring;r. 30 minispill, 5 verdener, 7 spr&aring;k. 100&nbsp;% reklamefritt.</p>
+            <span class="product-tag review">Google Play &mdash; under godkjenning</span>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-icon dev">🔧</div>
+          <div class="product-info">
+            <h3>FocusFlow Pro</h3>
+            <p>Chrome-utvidelse for fokusert arbeid. Blokker distraksjoner, spor tid, oppn&aring; m&aring;l.</p>
+            <span class="product-tag">Live &mdash; Chrome Web Store</span>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-icon wp">📝</div>
+          <div class="product-info">
+            <h3>Woo AI Writer</h3>
+            <p>WordPress-plugin som genererer produktbeskrivelser med AI for WooCommerce-butikker.</p>
+            <span class="product-tag">Live &mdash; WordPress.org</span>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-icon wp">🖼️</div>
+          <div class="product-info">
+            <h3>AltFlow</h3>
+            <p>WordPress-plugin for automatisk generering av alt-tekst p&aring; bilder med AI.</p>
+            <span class="product-tag review">Innsendt &mdash; WordPress.org</span>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-icon dev">🔍</div>
+          <div class="product-info">
+            <h3>TraceForge</h3>
+            <p>Atlassian Forge-app for sporbarhet og compliance i Jira og Confluence.</p>
+            <span class="product-tag review">Innsendt &mdash; Atlassian Marketplace</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="container">
+      <h2 class="section-title">Om selskapet</h2>
+      <p class="about-text">
+        Adea IT AS ble grunnlagt i Oslo med m&aring;l om &aring; lage programvare som gj&oslash;r en reell forskjell &mdash; enten det er trygge l&aelig;ringsapper for barn eller verkt&oslash;y som sparer tid for utviklere og bedrifter. Vi designer, bygger og vedlikeholder alle produktene v&aring;re selv, fra id&eacute; til lansering.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p class="footer-legal">&copy; 2026 Adea IT AS &mdash; Org.nr 922 689 148 &mdash; Oslo, Norge</p>
+      <div class="footer-links">
+        <a href="https://lunelo.no">lunelo.no</a>
+        <a href="mailto:nevzat@adea-it.no">nevzat@adea-it.no</a>
+        <a href="https://github.com/Nevzat86">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
