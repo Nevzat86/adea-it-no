@@ -447,6 +447,39 @@ body.admin-mode .adminlock{display:none}
 .faq-item b{display:block;margin-bottom:6px}
 .resetbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
 .page-lead{margin-bottom:22px}
+.trustrow{display:flex;flex-wrap:wrap;gap:10px 16px;margin:14px 0 4px}
+.trustrow span{font-size:13px;color:var(--band-ink);opacity:.92;display:flex;align-items:center;gap:6px}
+.reviews{display:flex;gap:16px;align-items:center;margin:16px 0 0;flex-wrap:wrap}
+.reviews .score{font-family:Fraunces,Georgia,serif;font-size:28px;line-height:1;color:var(--band-ink)}
+.reviews .revmeta{font-size:13px;color:var(--band-ink);opacity:.88}
+.reviews .revquote{font-size:13.5px;color:var(--band-ink);opacity:.9;max-width:42ch;font-style:italic}
+.flexibar{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.flexibar .pill{background:rgba(255,255,255,.12);color:var(--band-ink);border:1px solid rgba(255,255,255,.22)}
+.orig{font-size:12.5px;color:var(--muted);margin-top:2px}
+.cprice .per{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px}
+.guarantees{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+.guarantees .panel h3{font-size:16px;margin-bottom:6px}
+.waitbox{margin-top:12px}
+.waitbox .pfield{margin-top:8px}
+@media(max-width:860px){
+  .guarantees{grid-template-columns:1fr}
+  .heroband .reviews{flex-direction:column;align-items:flex-start}
+}
+.pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.pickgrid{grid-template-columns:1fr}}
+.mealcard{cursor:pointer}
+.recipecard{text-align:left;border:0;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);padding:0;display:flex;flex-direction:column}
+.recipecard .mthumb{aspect-ratio:4/3;background:var(--sea-soft)}
+.recipecard .mthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.recipecard .mbody{padding:12px 14px 16px}
+.recipecard h4{font-size:15px;margin:0 0 4px;line-height:1.3}
+.addonlist{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.addonrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px}
+.addonrow[aria-pressed="true"]{border-color:var(--sea);background:var(--sea-soft)}
+.addonrow .nm{flex:1}
+.feedbox{font-family:ui-monospace,Menlo,monospace;font-size:12px;width:100%;min-height:160px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);border-radius:8px;padding:10px 12px;resize:vertical}
+.giftnote{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--tare-soft)}
+.schema-note{font-size:12px;color:var(--muted);margin-top:10px}
 
 </style>
 </head>
@@ -492,13 +525,23 @@ body.admin-mode .adminlock{display:none}
     <div class="heroscrim" aria-hidden="true"></div>
     <div class="hero">
       <div>
-        <p class="herotag">Fersk sjømat fra Vestlandet</p>
+        <p class="herotag">Sjømat fra Vestlandet, frossen samme døgn</p>
         <h1>Havet rett hjem,<br>i din takt</h1>
-        <p class="lead">Velg en kasse som passer husholdningen. Bytt innhold, hopp over en levering eller sett den på pause. Du bestemmer helt til kassen låses.</p>
-        <div class="offer">Nytt medlem: 30 % på første kasse</div>
+        <p class="lead">Ingen binding. Hopp over, pause eller avslutt når du vil. Bytt innhold fram til kassen låses søndag kl. 23:59.</p>
+        <div class="offer">Prøvekasse 449 kr · neste levering til vanlig pris</div>
+        <div class="flexibar">
+          <span class="pill se">Hopp over når du vil</span>
+          <span class="pill se">Pause uten gebyr</span>
+          <span class="pill se">Smaksgaranti til den er tint</span>
+        </div>
         <div class="row">
-          <button class="btn" onclick="go('club')">Se kassene</button>
+          <button class="btn" onclick="startProve()">Start med prøvekasse</button>
           <button class="btn ghost" onclick="go('shop')">Handle enkeltvarer</button>
+        </div>
+        <div class="reviews">
+          <div class="score">4,8</div>
+          <div class="revmeta">Eksempel · visningsdata<br>Byttes med ekte Google-snitt</div>
+          <div class="revquote">«Fileten var beinfritt, og SMS kom før bilen. Vi hoppet over hytteuka uten å ringe.»</div>
         </div>
       </div>
       <div class="panel glass">
@@ -524,6 +567,13 @@ body.admin-mode .adminlock{display:none}
     <div id="homeGrid" hidden></div>
   </div>
 
+  <div class="sec">
+    <div class="sechead"><h2>Middager folk søker på</h2>
+      <button class="btn ghost" onclick="go('meal')">Alle oppskrifter</button></div>
+    <p class="small" style="margin:-4px 0 12px">Oppskrift som landing, med Recipe-schema. Folk søker «ovnsbakt kveite», ikke «sjømatabonnement» først.</p>
+    <div class="grid" id="homeRecipeGrid"></div>
+  </div>
+
   <div class="sec steps">
     <div class="sechead"><h2>Slik fungerer Havklubben</h2></div>
     <div class="stepgrid">
@@ -531,8 +581,17 @@ body.admin-mode .adminlock{display:none}
         <p class="small">Liten, Familie eller Storhusholdning, tilpasset husstanden din.</p></div>
       <div class="step"><span class="stepno">02</span><h3>Sett preferanser</h3>
         <p class="small">Ekskluder skalldyr eller bearbeidet mat, og vi tilpasser kassen automatisk fra da av.</p></div>
-      <div class="step"><span class="stepno">03</span><h3>Motta og nyt</h3>
-        <p class="small">Fersk sjømat levert med Fiskebilen eller Bring, med 15 % medlemsrabatt på alt.</p></div>
+      <div class="step"><span class="stepno">03</span><h3>Motta frossen, tint når du vil</h3>
+        <p class="small">Torsdag 16–20 med Fiskebilen, eller Bring med dato og vindu. Rett i frys. SMS før ankomst.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sechead"><h2>Det du lurer på før første kasse</h2></div>
+    <div class="guarantees">
+      <div class="panel"><h3>Smaksgaranti</h3><p class="small">Til den er tint. Lukt eller tekstur som ikke stemmer: ny vare eller tilgode. Ingen retur av fisk.</p></div>
+      <div class="panel"><h3>Ingen binding</h3><p class="small">Hopp over, pause eller avslutt på Min side. Synlig ved hvert kjøp. Ingen telefon.</p></div>
+      <div class="panel"><h3>Opprinnelse på kortet</h3><p class="small">Vill eller oppdrett, område, redskap og frysetidspunkt. Ikke vag bærekraft.</p></div>
     </div>
   </div>
 
@@ -585,7 +644,7 @@ body.admin-mode .adminlock{display:none}
 <section class="screen" id="s-shop">
   <p class="eyebrow">Butikk</p>
   <h1 class="fr" style="font-size:38px;letter-spacing:-.015em;margin:8px 0 6px">Alle varer</h1>
-  <p class="lead">Alt sløyes og pakkes samme døgn som det leveres fra mottaket.</p>
+  <p class="lead">Frossen samme døgn som den pakkes. Beinfritt der det står. Pris per kg og per 150 g på hvert kort.</p>
   <div class="filters" id="filters"></div>
   <div class="grid" id="shopGrid"></div>
 </section>
@@ -597,7 +656,12 @@ body.admin-mode .adminlock{display:none}
 <section class="screen" id="s-club">
   <p class="eyebrow">Havklubben</p>
   <h1 class="fr" style="font-size:38px;letter-spacing:-.015em;margin:8px 0 6px">Velg din kasse</h1>
-  <p class="lead">15 % medlemsrabatt på alt innhold. Ingen bindingstid, og du kan pause når som helst.</p>
+  <p class="lead">15 % på alt etter prøvekassen. Ingen binding. Hopp over eller pause før lock, uten å ringe.</p>
+  <div class="row" style="margin:12px 0 18px">
+        <button class="btn" onclick="startProve()">Prøvekasse, 449 kr</button>
+        <button class="btn ghost" onclick="startGift()">Gavekasse, 3 leveringer</button>
+      </div>
+      <p class="small" style="margin:-6px 0 14px">Gavekassen koster tre Familiekasser og stopper av seg selv. Ingen evig trekk i mottakerens navn.</p>
   <div class="tiers" id="tiers"></div>
   <div class="panel" style="margin-top:20px">
     <h3>Hvor ofte vil du ha levering?</h3>
@@ -653,6 +717,9 @@ body.admin-mode .adminlock{display:none}
     </div>
   </div>
 
+  <div class="sechead" style="margin-top:28px"><h2>Oppskrifter</h2></div>
+  <p class="small">Klikk en rett. Schema ligger i koden, synlig for Google når siden indekseres.</p>
+  <div class="grid" id="recipeIndex" style="margin-top:12px"></div>
   <div id="mealPlanOut"></div>
 </section>
 
@@ -663,6 +730,8 @@ body.admin-mode .adminlock{display:none}
   <p class="lead">Fem spørsmål, bygget på Helsedirektoratets kostråd og allmenn kunnskap om sjømat.</p>
   <div id="quizBody" style="margin-top:18px;max-width:560px"></div>
 </section>
+
+<section class="screen" id="s-recipe"><div id="recipeBody"></div></section>
 
 <!-- 8 ADMIN -->
 <section class="screen" id="s-admin">
@@ -700,6 +769,15 @@ body.admin-mode .adminlock{display:none}
       <button data-akey="logger" onclick="setAdminTab('logger')">
         <svg class="anicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v2H8V4a1 1 0 0 1 1-1Z"/><path d="M8 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h6"/></svg>
         <span>Systemlogger</span></button>
+      <button data-akey="fangst" onclick="setAdminTab('fangst')">
+        <svg class="anicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h13l5-4v12l-5-4H3z"/></svg>
+        <span>Ukens fangst</span></button>
+      <button data-akey="plukk" onclick="setAdminTab('plukk')">
+        <svg class="anicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Plukk og rute</span></button>
+      <button data-akey="vekst" onclick="setAdminTab('vekst')">
+        <svg class="anicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        <span>Utkast og feed</span></button>
       <button data-akey="innstillinger" onclick="setAdminTab('innstillinger')">
         <svg class="anicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         <span>Innstillinger</span></button>
@@ -860,6 +938,18 @@ body.admin-mode .adminlock{display:none}
         </div>
       </div>
 
+      <div id="admin-fangst" class="apanel" style="display:none">
+        <div class="sechead"><h2 style="font-size:19px;font-family:Archivo,sans-serif">Ukens fangst</h2></div>
+        <div id="fangstBody"></div>
+      </div>
+      <div id="admin-plukk" class="apanel" style="display:none">
+        <div class="sechead"><h2 style="font-size:19px;font-family:Archivo,sans-serif">Plukk og rute</h2></div>
+        <div id="plukkBody"></div>
+      </div>
+      <div id="admin-vekst" class="apanel" style="display:none">
+        <div class="sechead"><h2 style="font-size:19px;font-family:Archivo,sans-serif">Utkast og feed</h2></div>
+        <div id="vekstBody"></div>
+      </div>
       <div id="admin-innstillinger" class="apanel" style="display:none">
         <div class="sechead"><h2 style="font-size:19px;font-family:Fraunces,serif">Innstillinger</h2></div>
         <div class="tabbar" role="tablist" aria-label="Innstillingsfaner" id="setTabbar"></div>
@@ -950,6 +1040,8 @@ body.admin-mode .adminlock{display:none}
 
 <script>
 var SETTINGS={maintenance:false,emailsOn:false,smsOn:true,minWSubOn:true,minWSub:5,minWSingleOn:false,minWSingle:5};
+var WAITLIST=[];
+var CATCH_IDS=[1,2,3];
 /* ---------- data ---------- */
 const ICONS={
  fisk:'<svg viewBox="0 0 64 40" fill="none"><path d="M2 20c10-15 26-18 38-12 5 2 9 6 12 12-3 6-7 10-12 12-12 6-28 3-38-12Z" fill="currentColor" opacity=".22"/><path d="M2 20c10-15 26-18 38-12 5 2 9 6 12 12-3 6-7 10-12 12-12 6-28 3-38-12Z" stroke="currentColor" stroke-width="2"/><path d="M52 20l10-8v16l-10-8Z" fill="currentColor" opacity=".5"/><circle cx="16" cy="17" r="2.4" fill="currentColor"/></svg>',
@@ -1481,7 +1573,7 @@ function drawAdmin(){
    </tbody>`;}
 
 /* ---------- admin sidebar ---------- */
-const ADMIN_KEYS=["oversikt","produkter","bestillinger","abonnementer","kunder","omrader","blogg","innsikt","logger","innstillinger"];
+const ADMIN_KEYS=["oversikt","produkter","bestillinger","abonnementer","kunder","omrader","blogg","innsikt","logger","innstillinger","fangst","plukk"];
 function setAdminTab(t){
   ADMIN_KEYS.forEach(k=>{const el=document.getElementById("admin-"+k); if(el)el.style.display=k===t?"":"none";});
   document.querySelectorAll(".adminnav button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.akey===t)));
@@ -2592,6 +2684,846 @@ function drawSettings(){
   const bg=document.getElementById("drawerBg");
   if(bg) bg.addEventListener("click", e=>{ if(e.target===bg) closeDrawer(); });
   document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDrawer(); });
+})();
+
+
+/* ===== P0: tillit, skip, dato, venteliste, plukk, ukens fangst ===== */
+const ORIGIN={
+  1:{fangst:"Oppdrett",redskap:"Merde",fao:"Hardangerfjorden",frossen:"2. sep 2026",bein:"Bein- og skinnfri"},
+  2:{fangst:"Villfanget",redskap:"Line",fao:"Lofoten, FAO 27",frossen:"1. sep 2026",bein:"Beinfritt loin"},
+  3:{fangst:"Villfanget",redskap:"Line",fao:"Sotra",frossen:"1. sep 2026",bein:"Bein- og skinnfri"},
+  4:{fangst:"Villfanget",redskap:"Trål",fao:"Nordsjøen",frossen:"31. aug 2026",bein:"Pillet, klart"},
+  5:{fangst:"Oppdrett",redskap:"Strømpe",fao:"Øygarden",frossen:"2. sep 2026",bein:"Hele skjell"},
+  6:{fangst:"Villfanget",redskap:"Dykker",fao:"Frøya",frossen:"30. aug 2026",bein:"Uten skall"},
+  7:{fangst:"Villfanget",redskap:"Snurpenot",fao:"Møre",frossen:"1. sep 2026",bein:"Beinfritt"},
+  8:{fangst:"Villfanget",redskap:"Teine",fao:"Hitra",frossen:"29. aug 2026",bein:"Kjøtt i skall"},
+  9:{fangst:"Oppdrett",redskap:"Merde",fao:"Hardanger",frossen:"2. sep 2026",bein:"Bein- og skinnfri"},
+ 10:{fangst:"Oppdrett",redskap:"Røkt hos oss",fao:"Hardanger",frossen:"28. aug 2026",bein:"Skivet, beinfritt"},
+ 11:{fangst:"Bearbeidet",redskap:"Eget kjøkken",fao:"Bergen",frossen:"3. sep 2026",bein:"Beinfritt"},
+ 12:{fangst:"Villfanget",redskap:"Juksa",fao:"Lofoten",frossen:"15. feb 2026",bein:"Hel rogn"}
+};
+if(!TIERS.find(t=>t.id==="prove")){
+  TIERS.unshift({id:"prove",n:"Prøvekasse",d:"4 porsjoner · 2 arter",kg:1.2,pr:449});
+}
+if(typeof S.skip==="undefined") S.skip=false;
+if(typeof S.paused==="undefined") S.paused=false;
+if(typeof S.noteHome==="undefined") S.noteHome="";
+window.WAITLIST=window.WAITLIST||[];
+window.CATCH_IDS=window.CATCH_IDS||[1,2,3];
+
+function enrichP(){
+  P.forEach(p=>{
+    const o=ORIGIN[p.id]; if(!o) return;
+    if(!p.fangst) Object.assign(p,o);
+  });
+}
+function kgPris(p){return Math.round(p.pr/(p.w/1000));}
+function porsjonKr(p){return Math.round(p.pr*(150/p.w));}
+function originLine(p){return `${p.fangst||"Sjømat"} · ${p.fao||p.o} · ${p.bein||""}`;}
+
+function card(p){
+  return `<button class="card" onclick="openItem(${p.id})">${thumb(p)}
+  <div class="cbody"><div class="cname">${p.n}</div>
+  <div class="cmeta">${p.w} g · ${p.bein||p.o}</div>
+  <div class="orig">${originLine(p)}</div>
+  <div class="cprice">${kr(p.pr)}<span class="per">${kgPris(p)} kr/kg · ca. ${kr(porsjonKr(p))} / 150 g</span></div></div></button>`;
+}
+
+function checkPnr(){
+  const v=document.getElementById("pnr").value.trim(), el=document.getElementById("pres");
+  const r=PNR[v];
+  if(!r){
+    el.className="pres on bad";
+    el.innerHTML=`Fant ikke postnummeret. Skriv fire siffer, eller prøv 5006.
+      <div class="waitbox"><label class="small">Utenfor lista? Vi sier fra når ruten treffer deg.</label>
+      <div class="pfield"><input id="waitPhone" type="tel" placeholder="Mobilnummer" aria-label="Mobil">
+      <button class="btn sea" onclick="joinWaitlist('${esc(v)}')">Si fra</button></div></div>`;
+    return;
+  }
+  if(r.t==="nei"){
+    el.className="pres on bad";
+    el.innerHTML=`${r.s}
+      <div class="waitbox"><span class="small">Vi kjører ikke hit ennå. Legg igjen mobil, så får du SMS når postnummeret åpner. Ingen nyhetsbrev.</span>
+      <div class="pfield"><input id="waitPhone" type="tel" placeholder="Mobilnummer" aria-label="Mobil">
+      <button class="btn sea" onclick="joinWaitlist('${esc(v)}')">Si fra når dere kjører</button></div></div>`;
+    return;
+  }
+  S.pnr=v; S.ship=r.t;
+  if(r.t==="bil"){
+    el.className="pres on good";
+    el.innerHTML=`<b>Fiskebilen, torsdag 11. september kl. 16–20.</b> Fast frakt 49 kr. SMS 30 minutter før. Hvis du ikke er hjemme: skriv hvor kassen kan stå, i kassen.`;
+  }else{
+    el.className="pres on mid";
+    el.innerHTML=`<b>Bring, fredag 12. september, vindu 08–17.</b> Isolert eske, 149 kr. Sett kassen rett i frys. SMS når den er underveis.`;
+  }
+}
+function joinWaitlist(pnr){
+  const phone=(document.getElementById("waitPhone")||{}).value||"";
+  const clean=phone.replace(/\s/g,"");
+  if(clean.length<8){toast("Skriv et mobilnummer.");return;}
+  WAITLIST.push({pnr:pnr||document.getElementById("pnr").value.trim(),phone:clean,dato:"6. sep 2026"});
+  persistDemo();
+  const el=document.getElementById("pres");
+  el.className="pres on good";
+  el.textContent="Takk. Vi sender én SMS når vi kjører til "+(pnr||"ditt postnummer")+". Ingen nyhetsbrev.";
+}
+
+function openItem(id){
+  const p=item(id); if(!p) return;
+  document.getElementById("itemBody").innerHTML=`
+   <button class="btn ghost" onclick="go('shop')" style="margin-bottom:18px">← Tilbake</button>
+   <div class="detail"><div>${thumb(p)}</div><div>
+     <p class="eyebrow">${p.k}</p>
+     <h1 class="fr" style="font-size:42px;letter-spacing:-.02em;font-variation-settings:'opsz' 144;margin:10px 0 12px">${p.n}</h1>
+     <p class="lead">${p.t}</p>
+     <p class="small" style="margin:8px 0 0">Varen er <b>frossen samme døgn</b> som den pakkes. Tint skal merkes opptint. Ikke «fanget i dag».</p>
+     <ul class="spec">
+       <li><span>Vekt</span><span class="num">${p.w} g</span></li>
+       <li><span>Pris per kg</span><span class="num">${kgPris(p)} kr</span></li>
+       <li><span>Ca. per 150 g porsjon</span><span class="num">${kr(porsjonKr(p))}</span></li>
+       <li><span>Vill / oppdrett</span><span>${p.fangst||"—"}</span></li>
+       <li><span>Område</span><span>${p.fao||p.o}</span></li>
+       <li><span>Redskap</span><span>${p.redskap||"—"}</span></li>
+       <li><span>Frosset</span><span class="num">${p.frossen||"—"}</span></li>
+       <li><span>Bein og skinn</span><span>${p.bein||"—"}</span></li>
+       <li><span>Medlemspris</span><span class="num">${kr(Math.round(p.pr*.85))}</span></li>
+     </ul>
+     <div class="pres on good" style="margin:16px 0 8px">Smaksgaranti til den er tint. Lukt eller tekstur som ikke stemmer: ny vare eller tilgode. Ingen retur av fisk.</div>
+     <div style="font-family:Fraunces,serif;font-size:36px;font-weight:600;margin:16px 0 4px" class="num">${kr(p.pr)}</div>
+     ${p.sold?`<div class="pres on bad" style="margin-bottom:12px">Utsolgt akkurat nå. Ny leveranse ventes fredag 11. september.</div>`:''}
+     <div class="row" style="margin-top:6px">
+       <button class="btn" onclick="addCart(${p.id});go('checkout')" ${p.sold?"disabled":""}>Legg i kurv</button>
+       <button class="btn ghost" onclick="addToNextBox(${p.id})" ${p.sold?"disabled":""}>Legg i neste kasse</button>
+     </div></div></div>`;
+  go('item');
+}
+function addToNextBox(id){
+  if(S.locked){toast("Kassen er låst. Hopp over eller vent til neste uke.");return;}
+  if(!S.box.includes(id)) S.box.push(id);
+  toast("Lagt i neste kasse.");
+  go('mine');
+}
+
+function startProve(){
+  S.tier="prove"; S.box=[1,2]; S.freq=4;
+  go('mine');
+}
+
+function drawHome(){
+  const el=document.getElementById("homeCatch");
+  if(!el) return;
+  const ids=CATCH_IDS.filter(id=>item(id));
+  const feat=item(ids[0]||1), side=ids.slice(1,3).map(item).filter(Boolean);
+  if(!feat){el.innerHTML="";return;}
+  el.innerHTML=`
+    <button class="catch-feat" onclick="openItem(${feat.id})">${thumb(feat)}
+      <div class="cbody">
+        <p class="herotag" style="color:var(--sea);opacity:1">Ukens fangst</p>
+        <div class="cname">${feat.n}</div>
+        <div class="cmeta">${feat.w} g · ${feat.bein||""}</div>
+        <div class="orig">${originLine(feat)}</div>
+        <p class="small" style="margin:8px 0 10px">${feat.t||""}</p>
+        <div class="cprice">${kr(feat.pr)}<span class="per">${kgPris(feat)} kr/kg</span></div>
+      </div>
+    </button>
+    ${side.map(card).join("")}`;
+}
+
+function drawMine(){
+  const t=TIERS.find(x=>x.id===S.tier)||TIERS[1], kg=boxKg(), ok=kg>=t.kg;
+  const inBox=S.box.map(id=>item(id)).filter(Boolean);
+  const out=P.filter(p=>!S.box.includes(p.id)&&!p.sold&&!S.prefs[p.k]);
+  const excluded=Object.keys(S.prefs).filter(k=>S.prefs[k]);
+  const status=S.paused?"Pauset":S.skip?"Hopper over uke 39":"Aktivt";
+  const statusClass=S.paused||S.skip?"wa":"ok";
+  document.getElementById("mineBody").innerHTML=`
+  <div class="panel" style="margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;align-items:center">
+    <div><div class="small">Ditt medlemskap</div>
+      <div style="font-weight:700;font-size:18px">${t.n} · hver ${S.freq}. uke</div></div>
+    <div><div class="small">Neste levering</div><div style="font-weight:700;font-size:18px">${S.skip?"Uke 40":"Torsdag 11. sep, 16–20"}</div></div>
+    <div style="margin-left:auto"><span class="pill ${statusClass}">${status}</span></div>
+  </div>
+  <div class="panel" style="margin-bottom:16px">
+    <h3>Ingen binding</h3>
+    <p class="small">Hopp over én uke, pause en periode, eller avslutt. Ingen telefon. Kassen låses søndag 14. september kl. 23:59. Du får SMS dagen før.</p>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" onclick="S.skip=!S.skip;persistDemo();drawMine()">${S.skip?"Angre hopp over":"Hopp over neste levering"}</button>
+      <button class="btn ghost" onclick="S.paused=!S.paused;persistDemo();drawMine()">${S.paused?"Gjenoppta":"Pause abonnementet"}</button>
+      <button class="btn ghost" onclick="if(confirm('Avslutte Havklubben? Siste kasse som ikke er låst blir ikke sendt.')){S.paused=true;S.box=[];persistDemo();drawMine();toast('Avsluttet. Ingen flere trekk i demoen.');}">Avslutt</button>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:16px">
+    <h3>Dine preferanser</h3>
+    <p class="small">Ekskluder kategorier du ikke vil ha.</p>
+    <div class="filters" style="margin:12px 0 0">
+      ${["Skalldyr","Bearbeidet"].map(k=>`<button class="chip" aria-pressed="${S.prefs[k]}" onclick="togglePref('${k}')">Ingen ${k.toLowerCase()}</button>`).join("")}
+    </div>
+    ${excluded.length?`<p class="small" style="margin-top:10px;color:var(--sea)">Kassen tilpasses: ${excluded.join(" og ").toLowerCase()} vises ikke.</p>`:''}
+  </div>
+  ${S.locked?'<div class="lock" style="margin-bottom:14px">Kassen er låst. Du kan fortsatt hoppe over neste uke over.</div>'
+   :'<div class="lock" style="margin-bottom:14px">Du kan endre innholdet fram til søndag 14. september kl. 23:59. SMS går ut lørdag.</div>'}
+  <div class="editor">
+    <div class="col"><h3>I kassen din</h3>${
+      inBox.length?inBox.map(p=>`<div class="item">
+        <div class="nm">${p.n}<div class="wt num">${p.w} g · ${p.fangst||""} · ${kr(Math.round(p.pr*.85))}</div></div>
+        <button class="iconbtn" onclick="rmBox(${p.id})" ${S.locked?"disabled":""} aria-label="Fjern ${p.n}">−</button></div>`).join("")
+      :'<p class="small">Kassen er tom.</p>'}</div>
+    <div class="col"><h3>Bytt inn</h3>${out.length?out.slice(0,6).map(p=>`<div class="item">
+      <div class="nm">${p.n}<div class="wt num">${p.w} g · ${p.bein||""}</div></div>
+      <button class="iconbtn" onclick="addBox(${p.id})" ${S.locked?"disabled":""} aria-label="Legg til ${p.n}">+</button></div>`).join("")
+      :'<p class="small">Ingen forslag matcher preferansene dine.</p>'}</div>
+  </div>
+  <div class="meter">
+    <div style="display:flex;justify-content:space-between;font-size:14px">
+      <b>Vekt i kassen</b><span class="num">${kg.toFixed(1)} av minst ${t.kg} kg</span></div>
+    <div class="bar"><i class="${ok?'':'low'}" style="width:${Math.min(100,kg/t.kg*100)}%"></i></div>
+    ${ok?`<div class="small" style="color:var(--ok);font-weight:600">Kassen er klar</div>`
+        :`<div class="small" style="color:var(--warn);font-weight:600">Legg til ${(t.kg-kg).toFixed(1)} kg for å nå minstevekten</div>`}
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:17px;font-weight:700">
+      <span>Totalt med medlemsrabatt</span><span class="num">${kr(boxKr())}</span></div>
+    <div class="row">
+      <button class="btn" ${(!ok||S.locked||S.skip)?"disabled":""} onclick="go('checkout')">Lagre og gå til kassen</button>
+      <button class="btn ghost" onclick="suggestRecipe()" ${inBox.length?"":"disabled"}>Foreslå middag fra kassen min</button>
+    </div>
+  </div>`;
+}
+
+function drawCheckout(){
+  const has=S.cart.length>0, sub=has?S.cart.reduce((a,id)=>a+item(id).pr,0):boxKr();
+  const bilOK=S.ship==="bil", fee=S.ship?(bilOK?49:149):149;
+  if(!has&&S.box.length===0){document.getElementById("coBody").innerHTML=
+    `<div class="empty"><h3>Kurven er tom</h3><p>Legg til varer, eller sett sammen en kasse i Havklubben.</p>
+     <div class="row" style="justify-content:center"><button class="btn" onclick="go('shop')">Til butikken</button></div></div>`;return;}
+  document.getElementById("coBody").innerHTML=`<div class="two"><div>
+    <h2 style="font-size:17px;margin-bottom:10px">Levering${S.pnr?` til ${S.pnr}`:""}</h2>
+    ${!S.pnr?'<div class="pres on mid" style="margin-bottom:12px">Vi vet ikke postnummeret ditt ennå. Prisene under er standard Bring-frakt.</div>':''}
+    <button class="opt" aria-pressed="${bilOK}" onclick="S.ship='bil';drawCheckout()" ${S.pnr&&!bilOK?"disabled":""}>
+      <span class="dot"></span><span class="t"><b>Fiskebilen</b><div class="small">Torsdag 11. september kl. 16–20. SMS 30 minutter før. Du trenger ikke være hjemme hvis du skriver hvor kassen kan stå.</div></span>
+      <span class="p num">49 kr</span></button>
+    <button class="opt" aria-pressed="${!bilOK}" onclick="S.ship='bring';drawCheckout()">
+      <span class="dot"></span><span class="t"><b>Bring hjemlevering</b><div class="small">Fredag 12. september, vindu 08–17. Isolert eske. Rett i frys ved ankomst.</div></span>
+      <span class="p num">149 kr</span></button>
+    <div class="field" style="margin-top:12px"><label class="small">Hvis du ikke er hjemme</label>
+      <input value="${esc(S.noteHome)}" oninput="S.noteHome=this.value" placeholder="F.eks. ved boden, ring port 3"></div>
+    <div class="pres on good" style="margin-top:12px">Smaksgaranti til den er tint. Ingen retur av fisk. Ny vare eller tilgode.</div>
+    <div class="stub">Ikke aktivt i demoen: booking hos transportør.</div>
+
+    <h2 style="font-size:17px;margin:22px 0 10px">Betaling</h2>
+    <button class="opt" aria-pressed="true"><span class="dot"></span>
+      <span class="t"><b>Faktura</b><div class="small">14 dagers betalingsfrist. Vipps Faste betalinger kan kobles i en ferdig løsning. Ikke aktivt her.</div></span></button>
+    <div class="stub">Ikke aktivt i demoen: fakturaoppslag.</div>
+    <p class="small" style="margin-top:12px">Ingen binding. Du kan hoppe over eller avslutte på Min side før lock.</p>
+    <label style="display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:10px">
+      <input type="checkbox" style="width:auto;min-height:auto" onchange="S.fail=this.checked">
+      Simuler at betalingen feiler</label>
+  </div>
+  <div class="sum">
+    <h2 style="font-size:16px;margin-bottom:8px">${has?"Din bestilling":"Din kasse, uke 39"}</h2>
+    <div class="sline"><span>${has?S.cart.length+" varer":(TIERS.find(t=>t.id===S.tier)||{}).n}</span><span class="num">${kr(sub)}</span></div>
+    ${has?"":`<div class="sline" style="color:var(--ok)"><span>Medlemsrabatt 15 %</span><span>inkludert</span></div>`}
+    <div class="sline"><span>Frakt</span><span class="num">${kr(fee)}</span></div>
+    <div class="sline tot"><span>Å betale</span><span class="num">${kr(sub+fee)}</span></div>
+    <div class="row"><button class="btn" style="width:100%" onclick="pay()">Fullfør bestilling</button></div>
+    <div id="payErr"></div>
+  </div></div>`;
+}
+
+function drawDone(){
+  const bil=S.ship==="bil";
+  document.getElementById("doneBody").innerHTML=`
+  <div style="text-align:center;padding:14px 0 26px">
+    <p class="eyebrow">Bestilling 2026-1043</p>
+    <h1 class="fr" style="font-size:36px;margin:8px 0 8px">Takk! Vi pakker kassen din</h1>
+    <p class="lead" style="margin:0 auto">Du får SMS lørdag før lock, og 30 minutter før bilen hvis du har Fiskebilen.</p>
+  </div>
+  <div class="panel">
+    <ul class="tl">
+      <li><span class="d"></span><div><b>Bestilling mottatt</b><div class="small">I dag</div></div></li>
+      <li><span class="d"></span><div><b>Faktura sendes</b><div class="small">På e-post i morgen, 14 dagers frist</div></div></li>
+      <li><span class="d future"></span><div><b>Lock-SMS</b><div class="small">Lørdag 13. september: hopp over eller la kassen gå</div></div></li>
+      <li><span class="d future"></span><div><b>Vi pakker frossen</b><div class="small">Onsdag 10. september, samme døgn som fra mottak</div></div></li>
+      <li><span class="d future"></span><div><b>${bil?"Fiskebilen":"Bring"}</b>
+        <div class="small">${bil?"Torsdag 11. september kl. 16–20, SMS 30 min før":"Fredag 12. september, vindu 08–17. Rett i frys."}</div></div></li>
+    </ul>
+    ${S.noteHome?`<p class="small" style="margin-top:12px">Hvis du ikke er hjemme: ${esc(S.noteHome)}</p>`:""}
+    <div class="stub" style="margin-top:16px">Ikke aktivt i demoen: e-post og SMS sendes ikke ut.</div>
+  </div>
+  <div class="refer"><div><h3>Gi 200 kr, få 200 kr</h3>
+    <p>Del koden etter at du har fått kasse 2. Begge får 200 kr.</p></div>
+    <div class="code">HAV-200</div></div>
+  <div class="row" style="justify-content:center;margin-top:24px">
+    <button class="btn ghost" onclick="go('mine')">Se abonnementet mitt</button></div>`;
+}
+
+function drawFangst(){
+  const box=document.getElementById("fangstBody"); if(!box) return;
+  box.innerHTML=`<p class="small">Kryss av artene i ukens kasse. «Bytt inn» erstatter innholdet i ulåste demo-kasser (din Min side).</p>
+    <div class="tw"><table><thead><tr><th></th><th>Produkt</th><th>Opprinnelse</th><th>Lager kg</th></tr></thead><tbody>
+    ${P.map(p=>`<tr><td><input type="checkbox" ${CATCH_IDS.includes(p.id)?"checked":""} onchange="toggleCatch(${p.id})"></td>
+      <td><b>${p.n}</b><div class="small">${p.bein||""}</div></td>
+      <td class="small">${originLine(p)}</td>
+      <td class="num">${(p.w/100).toFixed(1)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" onclick="applyCatchToBoxes()">Bytt inn i ulåste kasser</button>
+    </div>
+    <p class="small" style="margin-top:10px">Venteliste: ${WAITLIST.length} nummer. ${WAITLIST.length?WAITLIST.map(w=>w.pnr+" · "+w.phone).join("; "):"Ingen ennå."}</p>`;
+}
+function toggleCatch(id){
+  const i=CATCH_IDS.indexOf(id);
+  if(i>=0) CATCH_IDS.splice(i,1); else CATCH_IDS.push(id);
+  persistDemo(); drawFangst(); drawHome();
+}
+function applyCatchToBoxes(){
+  if(S.locked){toast("Din kasse er låst. Andre ulåste ville blitt oppdatert i en ferdig løsning.");return;}
+  const ids=CATCH_IDS.filter(id=>item(id)&&!item(id).sold).slice(0,4);
+  if(!ids.length){toast("Velg minst én art.");return;}
+  S.box=ids.slice();
+  persistDemo(); drawHome(); drawMine();
+  toast("Ukens fangst er satt i kassen. Butikkforsiden er oppdatert.");
+}
+
+function drawPlukk(){
+  const box=document.getElementById("plukkBody"); if(!box) return;
+  const lines={};
+  const add=(p,n,rute)=>{
+    if(!p) return;
+    if(!lines[p.id]) lines[p.id]={p,n:0,kg:0,rute};
+    lines[p.id].n+=n; lines[p.id].kg+=n*(p.w/1000);
+  };
+  ORDERS.forEach(o=>{
+    const rute=o.lev.includes("Fiskebilen")?"bil":"bring";
+    (S.box.length?S.box:[1,2,3]).forEach(id=>add(item(id),1,rute));
+  });
+  const rows=Object.values(lines);
+  const bil=ORDERS.filter(o=>o.lev.includes("Fiskebilen"));
+  const bring=ORDERS.filter(o=>!o.lev.includes("Fiskebilen"));
+  box.innerHTML=`<div class="pickgrid">
+    <div class="panel"><h3>Plukk per vare</h3>
+      <div class="tw"><table><thead><tr><th>Vare</th><th>Antall</th><th>Kg</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr><td><b>${r.p.n}</b><div class="small">${r.p.fangst||""}</div></td>
+        <td class="num">${r.n}</td><td class="num">${r.kg.toFixed(1)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+    <div class="panel"><h3>Rute</h3>
+      <p class="small">Fiskebilen først, Bring-kolli etterpå.</p>
+      <ol class="small" style="margin:8px 0 0;padding-left:18px">
+        ${bil.map(o=>`<li>${o.navn}, ${o.by} · ${o.id}</li>`).join("")}
+      </ol>
+      <p class="small" style="margin-top:12px"><b>Bring</b></p>
+      <ol class="small" style="margin:8px 0 0;padding-left:18px">
+        ${bring.map(o=>`<li>${o.navn}, ${o.by} · ${o.id}</li>`).join("")}
+      </ol>
+    </div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="btn" onclick="sendLockSms()">Send lock-SMS (demo-kø)</button>
+  </div>`;
+}
+function sendLockSms(){
+  LOG_TABLE.unshift({tid:"06.09 21:10",type:"E-post",melding:"Lock-påminnelse lagt i kø til "+MEMBERS_TABLE.filter(m=>m.status==="Aktiv").length+" medlemmer. Sendes ikke i visningen.",niva:"ok"});
+  persistDemo();
+  if(typeof drawLogs==="function") drawLogs();
+  toast("Påminnelse lagt i kø. Ingen SMS går ut her.");
+}
+
+const _persistDemoOrig=typeof persistDemo==="function"?persistDemo:null;
+function persistDemo(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(DEMO_KEY)||"{}");
+    raw.waitlist=WAITLIST; raw.catchIds=CATCH_IDS;
+    raw.skip=S.skip; raw.paused=S.paused; raw.noteHome=S.noteHome;
+    localStorage.setItem(DEMO_KEY, JSON.stringify(Object.assign(raw,{
+      products:P, pnr:PNR, orders:ORDERS, members:MEMBERS_TABLE, customers:CUSTOMERS_TABLE,
+      areas:AREAS_TABLE, blog:BLOG_TABLE, settings:SETTINGS
+    })));
+  }catch(e){}
+}
+
+ADMIN_META.fangst=["Ukens fangst","Bytt art i alle ulåste kasser. Én handling, ikke 134 edit."];
+ADMIN_META.plukk=["Plukk og rute","Aggregert per vare, så kjørerekkefølge. Lock-SMS i kø."];
+
+(function bootP0(){
+  enrichP();
+  try{
+    const d=JSON.parse(localStorage.getItem(DEMO_KEY)||"null");
+    if(d){
+      if(d.waitlist) WAITLIST.splice(0,WAITLIST.length,...d.waitlist);
+      if(d.catchIds) {CATCH_IDS.length=0; d.catchIds.forEach(x=>CATCH_IDS.push(x));}
+      if(typeof d.skip==="boolean") S.skip=d.skip;
+      if(typeof d.paused==="boolean") S.paused=d.paused;
+      if(d.noteHome) S.noteHome=d.noteHome;
+    }
+  }catch(e){}
+  const origSet=setAdminTab;
+  window.setAdminTab=function(t){
+    origSet(t);
+    if(t==="fangst") drawFangst();
+    if(t==="plukk") drawPlukk();
+  };
+  const tierBox=document.getElementById("tiers");
+  if(tierBox){
+    tierBox.innerHTML=TIERS.map(t=>`
+ <button class="tier" aria-pressed="${t.id===S.tier}" onclick="setTier('${t.id}')">
+  ${t.pop?'<span class="pop">Mest valgt</span>':t.id==="prove"?'<span class="pop">Start her</span>':'<span class="pop" style="color:var(--muted)">&nbsp;</span>'}
+  <div style="font-weight:700;font-size:17px">${t.n}</div>
+  <div class="small">${t.d}</div>
+  <div class="pr num">${kr(t.pr)}</div>
+  <div class="small">per levering · minst ${t.kg} kg</div>
+  <ul><li>${t.id==="prove"?"To arter, fire porsjoner":"15 % på alt innhold"}</li><li>Bytt varer fritt</li><li>Hopp over når du vil</li></ul>
+ </button>`).join("");
+  }
+  drawHome();
+  rebuildFilters();
+  drawShop();
+})();
+
+/* ===== P1: schema, gavekasse, add-on, filter, verving etter kasse 2, admin-utkast ===== */
+if(typeof S.addons==="undefined") S.addons=[];
+if(typeof S.boxesReceived==="undefined") S.boxesReceived=0;
+if(typeof S.gift==="undefined") S.gift=null;
+HASH_TO_SCREEN.oppskrift="recipe";
+SCREEN_TO_HASH.recipe="oppskrift";
+if(!ADMIN_KEYS.includes("vekst")) ADMIN_KEYS.splice(ADMIN_KEYS.indexOf("innstillinger"),0,"vekst");
+ADMIN_META.vekst=["Utkast og feed","Kopier ukens innlegg. Publiser i Meta, ikke her. Produktfeed og Fiken-CSV er visning."];
+
+const ADDON_IDS=[4,10];
+const BARN_IDS=[1,2,10,11];
+
+function isBeinfritt(p){
+  return /beinfritt|bein- og skinnfri|pillet|skivet/i.test(p.bein||"");
+}
+function isBarn(p){ return BARN_IDS.includes(p.id); }
+function recipeSlug(r){
+  return r.tittel.toLowerCase()
+    .replace(/æ/g,"ae").replace(/ø/g,"o").replace(/å/g,"a")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function recipeBySlug(slug){ return RECIPES.find(r=>recipeSlug(r)===slug); }
+function isoDuration(tid){
+  const n=parseInt(tid,10); return isFinite(n)?("PT"+n+"M"):undefined;
+}
+function pageUrl(){ return location.href.split("#")[0]; }
+function schemaImageUrl(){ return "https://adea-it.no/demo/havkassen/"; }
+function setJsonLd(obj){
+  let el=document.getElementById("jsonld");
+  if(!el){ el=document.createElement("script"); el.type="application/ld+json"; el.id="jsonld"; document.head.appendChild(el); }
+  el.textContent=JSON.stringify(obj);
+}
+function clearJsonLd(){ const el=document.getElementById("jsonld"); if(el) el.remove(); }
+
+function rebuildFilters(){
+  const box=document.getElementById("filters"); if(!box) return;
+  const cats=["Alle",...new Set(P.map(p=>p.k)),"Beinfritt","Barnevennlig"];
+  box.innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===S.filter}" onclick="setFilter('${c}')">${c}</button>`).join("");
+}
+function drawShop(){
+  let l=P;
+  if(S.filter==="Beinfritt") l=P.filter(isBeinfritt);
+  else if(S.filter==="Barnevennlig") l=P.filter(isBarn);
+  else if(S.filter!=="Alle") l=P.filter(p=>p.k===S.filter);
+  document.getElementById("shopGrid").innerHTML=l.map(card).join("");
+}
+
+const _openItemP0=openItem;
+openItem=function(id){
+  _openItemP0(id);
+  const p=item(id); if(!p) return;
+  setJsonLd({
+    "@context":"https://schema.org",
+    "@type":"Product",
+    name:p.n,
+    description:p.t+" Frossen samme døgn. "+originLine(p),
+    image:schemaImageUrl(),
+    brand:{ "@type":"Brand", name:"Havkassen" },
+    offers:{
+      "@type":"Offer",
+      price:p.pr,
+      priceCurrency:"NOK",
+      availability:p.sold?"https://schema.org/OutOfStock":"https://schema.org/InStock",
+      url:pageUrl()+"#vare"
+    }
+  });
+};
+
+function recipeCard(r){
+  const p=item(r.hovedvare);
+  return `<button class="recipecard" onclick="openRecipe(${r.id})">
+    <div class="mthumb">${PHOTOS[r.hovedvare]?`<img src="${PHOTOS[r.hovedvare]}" alt="${r.tittel}">`:""}</div>
+    <div class="mbody"><h4>${r.tittel}</h4>
+      <p class="small">${r.tid} · ${p?p.n:""}</p>
+      <div class="mtags">${r.tags.map(t=>`<span class="mtag">${t}</span>`).join("")}</div>
+    </div></button>`;
+}
+function drawRecipeIndex(){
+  const home=document.getElementById("homeRecipeGrid");
+  if(home) home.innerHTML=RECIPES.slice(0,4).map(recipeCard).join("");
+  const idx=document.getElementById("recipeIndex");
+  if(idx) idx.innerHTML=RECIPES.slice(0,8).map(recipeCard).join("");
+}
+function openRecipe(id, opts){
+  opts=opts||{};
+  const r=RECIPES.find(x=>x.id===id); if(!r) return;
+  const p=item(r.hovedvare);
+  const ingredients=r.bruk.map(b=>{
+    const it=item(b.id); return (it?it.n:"Vare")+", "+b.g+" g";
+  }).concat(r.andre);
+  const steps=r.fremgangsmate.split(/(?<=\.)\s+/).filter(Boolean);
+  document.getElementById("recipeBody").innerHTML=`
+    <button class="btn ghost" onclick="go('meal')" style="margin-bottom:18px">← Alle oppskrifter</button>
+    <div class="detail"><div>${p?thumb(p):""}</div><div>
+      <p class="eyebrow">Oppskrift · ${r.tid}</p>
+      <h1 class="fr" style="font-size:36px;letter-spacing:-.02em;margin:10px 0 12px">${r.tittel}</h1>
+      <p class="lead">Middagen, ikke råvare-hobbyen. Hovedvaren er i kassen. Resten henter du selv.</p>
+      <ul class="spec">
+        <li><span>Tid</span><span>${r.tid}</span></li>
+        <li><span>Hovedvare</span><span>${p?p.n:"—"}</span></li>
+        <li><span>Bein</span><span>${p&&p.bein?p.bein:"—"}</span></li>
+      </ul>
+      <h3 style="margin:18px 0 8px">Ingredienser</h3>
+      <ul class="small" style="padding-left:18px">${ingredients.map(i=>`<li>${i}</li>`).join("")}</ul>
+      <h3 style="margin:18px 0 8px">Fremgangsmåte</h3>
+      <ol class="small" style="padding-left:18px">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+      <p class="schema-note">Recipe-schema ligger i koden (name + image + ingredienser + steg). I Google vises det når siden er indeksert. Denne demoen er merket noindex.</p>
+      <div class="row" style="margin-top:16px">
+        ${p?`<button class="btn" onclick="addToNextBox(${p.id})" ${p.sold?"disabled":""}>Legg ${p.n.toLowerCase()} i neste kasse</button>`:""}
+        <button class="btn ghost" onclick="go('shop')">Se varen</button>
+      </div>
+    </div></div>`;
+  setJsonLd({
+    "@context":"https://schema.org",
+    "@type":"Recipe",
+    name:r.tittel,
+    image:schemaImageUrl(),
+    description:"Hverdagsmiddag fra Havkassen. "+r.tid+".",
+    totalTime:isoDuration(r.tid),
+    recipeYield:"2 porsjoner",
+    recipeIngredient:ingredients,
+    recipeInstructions:steps.map(s=>({ "@type":"HowToStep", text:s })),
+    author:{ "@type":"Organization", name:"Havkassen" }
+  });
+  const slug=recipeSlug(r);
+  go("recipe",{skipHash:true, noMotion:opts.noMotion});
+  if(!opts.skipHash){
+    const next="#oppskrift/"+slug;
+    if(location.hash!==next) history.replaceState(null,"",next);
+  }
+}
+
+function startGift(){
+  S.tier="familie";
+  S.freq=4;
+  S.gift={left:3, to:"", from:""};
+  S.paused=false; S.skip=false;
+  S.boxesReceived=0;
+  S.addons=[];
+  S.box=[1,2,5,7,9,4,3,11];
+  persistDemo();
+  go("mine");
+  toast("Gavekasse: 3 leveringer, så stopper den av seg selv.");
+}
+
+function addonKr(){
+  return (S.addons||[]).reduce((a,id)=>{ const p=item(id); return a+(p?p.pr:0); },0);
+}
+function toggleAddon(id){
+  S.addons=S.addons||[];
+  const i=S.addons.indexOf(id);
+  if(i>=0) S.addons.splice(i,1); else S.addons.push(id);
+  persistDemo();
+  drawCheckout();
+}
+function addonPanel(){
+  return `<h2 style="font-size:17px;margin:22px 0 10px">Til neste kasse</h2>
+    <p class="small">Reker eller røkt, uten å åpne hele editoren. Legges i kassen du allerede har.</p>
+    <div class="addonlist">${ADDON_IDS.map(id=>{
+      const p=item(id); if(!p) return "";
+      const on=(S.addons||[]).includes(id);
+      return `<button class="addonrow" aria-pressed="${on}" onclick="toggleAddon(${id})">
+        <span class="nm"><b>${p.n}</b><div class="small">${p.w} g · ${p.bein||""}</div></span>
+        <span class="num">${kr(p.pr)}</span></button>`;
+    }).join("")}</div>`;
+}
+function referBlock(place){
+  const n=S.boxesReceived||0;
+  if(n<2){
+    return `<div class="panel" style="margin-top:16px"><h3>Vervekode etter kasse 2</h3>
+      <p class="small">Koden kommer når den andre kassen er levert, ikke i ordrebekreftelsen. Du har ${n} av 2.</p>
+      ${place==="mine"?`<button class="btn ghost" style="margin-top:10px" onclick="S.boxesReceived=2;persistDemo();drawMine();toast('Kasse 2 merket levert. Vervekoden vises.');">Simuler at kasse 2 er levert</button>`:""}
+    </div>`;
+  }
+  return `<div class="refer"><div><h3>Gi 200 kr, få 200 kr</h3>
+    <p>Kasse 2 er levert. Del koden. Begge får 200 kr på neste.</p></div>
+    <div class="code">HAV-200</div></div>`;
+}
+
+function drawMine(){
+  const t=TIERS.find(x=>x.id===S.tier)||TIERS[1], kg=boxKg(), ok=kg>=t.kg;
+  const inBox=S.box.map(id=>item(id)).filter(Boolean);
+  const out=P.filter(p=>!S.box.includes(p.id)&&!p.sold&&!S.prefs[p.k]);
+  const excluded=Object.keys(S.prefs).filter(k=>S.prefs[k]);
+  const status=S.paused?"Pauset":S.skip?"Hopper over uke 39":"Aktivt";
+  const statusClass=S.paused||S.skip?"wa":"ok";
+  const gift=S.gift;
+  document.getElementById("mineBody").innerHTML=`
+  <div class="panel" style="margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;align-items:center">
+    <div><div class="small">Ditt medlemskap</div>
+      <div style="font-weight:700;font-size:18px">${gift?"Gavekasse":t.n} · hver ${S.freq}. uke</div></div>
+    <div><div class="small">Neste levering</div><div style="font-weight:700;font-size:18px">${S.skip?"Uke 40":"Torsdag 11. sep, 16–20"}</div></div>
+    <div style="margin-left:auto"><span class="pill ${statusClass}">${status}</span></div>
+  </div>
+  ${gift?`<div class="giftnote"><b>Gavekasse.</b> ${gift.left} av 3 leveringer igjen. Når den siste er sendt, stopper trekk av seg selv. Mottakeren trenger ikke å si opp.</div>`:""}
+  <div class="panel" style="margin-bottom:16px">
+    <h3>Ingen binding</h3>
+    <p class="small">Hopp over én uke, pause en periode, eller avslutt. Ingen telefon. Kassen låses søndag 14. september kl. 23:59. Du får SMS dagen før.</p>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" onclick="S.skip=!S.skip;persistDemo();drawMine()">${S.skip?"Angre hopp over":"Hopp over neste levering"}</button>
+      <button class="btn ghost" onclick="S.paused=!S.paused;persistDemo();drawMine()">${S.paused?"Gjenoppta":"Pause abonnementet"}</button>
+      <button class="btn ghost" onclick="if(confirm('Avslutte Havklubben? Siste kasse som ikke er låst blir ikke sendt.')){S.paused=true;S.box=[];S.gift=null;persistDemo();drawMine();toast('Avsluttet. Ingen flere trekk i demoen.');}">Avslutt</button>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:16px">
+    <h3>Dine preferanser</h3>
+    <p class="small">Ekskluder kategorier du ikke vil ha. Barnevennlig er et filter i butikken, ikke en sperre her.</p>
+    <div class="filters" style="margin:12px 0 0">
+      ${["Skalldyr","Bearbeidet"].map(k=>`<button class="chip" aria-pressed="${S.prefs[k]}" onclick="togglePref('${k}')">Ingen ${k.toLowerCase()}</button>`).join("")}
+    </div>
+    ${excluded.length?`<p class="small" style="margin-top:10px;color:var(--sea)">Kassen tilpasses: ${excluded.join(" og ").toLowerCase()} vises ikke.</p>`:''}
+  </div>
+  ${S.locked?'<div class="lock" style="margin-bottom:14px">Kassen er låst. Du kan fortsatt hoppe over neste uke.</div>'
+   :'<div class="lock" style="margin-bottom:14px">Du kan endre innholdet fram til søndag 14. september kl. 23:59. SMS går ut lørdag.</div>'}
+  <div class="editor">
+    <div class="col"><h3>I kassen din</h3>${
+      inBox.length?inBox.map(p=>`<div class="item">
+        <div class="nm">${p.n}<div class="wt num">${p.w} g · ${p.fangst||""} · ${kr(Math.round(p.pr*.85))}</div></div>
+        <button class="iconbtn" onclick="rmBox(${p.id})" ${S.locked?"disabled":""} aria-label="Fjern ${p.n}">−</button></div>`).join("")
+      :'<p class="small">Kassen er tom.</p>'}</div>
+    <div class="col"><h3>Bytt inn</h3>${out.length?out.slice(0,6).map(p=>`<div class="item">
+      <div class="nm">${p.n}<div class="wt num">${p.w} g · ${p.bein||""}</div></div>
+      <button class="iconbtn" onclick="addBox(${p.id})" ${S.locked?"disabled":""} aria-label="Legg til ${p.n}">+</button></div>`).join("")
+      :'<p class="small">Ingen forslag matcher preferansene dine.</p>'}</div>
+  </div>
+  <div class="meter">
+    <div style="display:flex;justify-content:space-between;font-size:14px">
+      <b>Vekt i kassen</b><span class="num">${kg.toFixed(1)} av minst ${t.kg} kg</span></div>
+    <div class="bar"><i class="${ok?'':'low'}" style="width:${Math.min(100,kg/t.kg*100)}%"></i></div>
+    ${ok?`<div class="small" style="color:var(--ok);font-weight:600">Kassen er klar</div>`
+        :`<div class="small" style="color:var(--warn);font-weight:600">Legg til ${(t.kg-kg).toFixed(1)} kg for å nå minstevekten</div>`}
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:17px;font-weight:700">
+      <span>Totalt med medlemsrabatt</span><span class="num">${kr(boxKr())}</span></div>
+    <div class="row">
+      <button class="btn" ${(!ok||S.locked||S.skip)?"disabled":""} onclick="go('checkout')">Lagre og gå til kassen</button>
+      <button class="btn ghost" onclick="suggestRecipe()" ${inBox.length?"":"disabled"}>Foreslå middag fra kassen min</button>
+    </div>
+  </div>
+  ${referBlock("mine")}`;
+}
+
+function drawCheckout(){
+  const has=S.cart.length>0, sub=(has?S.cart.reduce((a,id)=>a+item(id).pr,0):boxKr())+addonKr();
+  const bilOK=S.ship==="bil", fee=S.ship?(bilOK?49:149):149;
+  if(!has&&S.box.length===0){document.getElementById("coBody").innerHTML=
+    `<div class="empty"><h3>Kurven er tom</h3><p>Legg til varer, eller sett sammen en kasse i Havklubben.</p>
+     <div class="row" style="justify-content:center"><button class="btn" onclick="go('shop')">Til butikken</button></div></div>`;return;}
+  document.getElementById("coBody").innerHTML=`<div class="two"><div>
+    <h2 style="font-size:17px;margin-bottom:10px">Levering${S.pnr?` til ${S.pnr}`:""}</h2>
+    ${!S.pnr?'<div class="pres on mid" style="margin-bottom:12px">Vi vet ikke postnummeret ditt ennå. Prisene under er standard Bring-frakt.</div>':''}
+    <button class="opt" aria-pressed="${bilOK}" onclick="S.ship='bil';drawCheckout()" ${S.pnr&&!bilOK?"disabled":""}>
+      <span class="dot"></span><span class="t"><b>Fiskebilen</b><div class="small">Torsdag 11. september kl. 16–20. SMS 30 minutter før. Du trenger ikke være hjemme hvis du skriver hvor kassen kan stå.</div></span>
+      <span class="p num">49 kr</span></button>
+    <button class="opt" aria-pressed="${!bilOK}" onclick="S.ship='bring';drawCheckout()">
+      <span class="dot"></span><span class="t"><b>Bring hjemlevering</b><div class="small">Fredag 12. september, vindu 08–17. Isolert eske. Rett i frys ved ankomst.</div></span>
+      <span class="p num">149 kr</span></button>
+    <div class="field" style="margin-top:12px"><label class="small">Hvis du ikke er hjemme</label>
+      <input value="${esc(S.noteHome)}" oninput="S.noteHome=this.value" placeholder="F.eks. ved boden, ring port 3"></div>
+    <div class="pres on good" style="margin-top:12px">Smaksgaranti til den er tint. Ingen retur av fisk. Ny vare eller tilgode.</div>
+    ${addonPanel()}
+    <div class="stub">Ikke aktivt i demoen: booking hos transportør.</div>
+
+    <h2 style="font-size:17px;margin:22px 0 10px">Betaling</h2>
+    <button class="opt" aria-pressed="true"><span class="dot"></span>
+      <span class="t"><b>Faktura</b><div class="small">14 dagers betalingsfrist. Vipps Faste betalinger kan kobles i en ferdig løsning. Ikke aktivt her.</div></span></button>
+    <div class="stub">Ikke aktivt i demoen: fakturaoppslag.</div>
+    <p class="small" style="margin-top:12px">Ingen binding. Du kan hoppe over eller avslutte på Min side før lock.</p>
+    <label style="display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:10px">
+      <input type="checkbox" style="width:auto;min-height:auto" onchange="S.fail=this.checked">
+      Simuler at betalingen feiler</label>
+  </div>
+  <div class="sum">
+    <h2 style="font-size:16px;margin-bottom:8px">${has?"Din bestilling":(S.gift?"Gavekasse, 3 leveringer":"Din kasse, uke 39")}</h2>
+    <div class="sline"><span>${has?S.cart.length+" varer":(TIERS.find(t=>t.id===S.tier)||{}).n}</span><span class="num">${kr(has?S.cart.reduce((a,id)=>a+item(id).pr,0):boxKr())}</span></div>
+    ${(S.addons||[]).length?`<div class="sline"><span>Add-on</span><span class="num">${kr(addonKr())}</span></div>`:""}
+    ${has?"":`<div class="sline" style="color:var(--ok)"><span>Medlemsrabatt 15 %</span><span>inkludert</span></div>`}
+    <div class="sline"><span>Frakt</span><span class="num">${kr(fee)}</span></div>
+    <div class="sline tot"><span>Å betale</span><span class="num">${kr(sub+fee)}</span></div>
+    <div class="row"><button class="btn" style="width:100%" onclick="pay()">Fullfør bestilling</button></div>
+    <div id="payErr"></div>
+  </div></div>`;
+}
+
+function drawDone(){
+  const bil=S.ship==="bil";
+  const gift=S.gift;
+  document.getElementById("doneBody").innerHTML=`
+  <div style="text-align:center;padding:14px 0 26px">
+    <p class="eyebrow">Bestilling 2026-1043</p>
+    <h1 class="fr" style="font-size:36px;margin:8px 0 8px">Takk! Vi pakker kassen din</h1>
+    <p class="lead" style="margin:0 auto">Du får SMS lørdag før lock, og 30 minutter før bilen hvis du har Fiskebilen.</p>
+  </div>
+  <div class="panel">
+    <ul class="tl">
+      <li><span class="d"></span><div><b>Bestilling mottatt</b><div class="small">I dag · kasse ${(S.boxesReceived||0)}</div></div></li>
+      <li><span class="d"></span><div><b>Faktura sendes</b><div class="small">På e-post i morgen, 14 dagers frist</div></div></li>
+      <li><span class="d future"></span><div><b>Lock-SMS</b><div class="small">Lørdag 13. september: hopp over eller la kassen gå</div></div></li>
+      <li><span class="d future"></span><div><b>Vi pakker frossen</b><div class="small">Onsdag 10. september, samme døgn som fra mottak</div></div></li>
+      <li><span class="d future"></span><div><b>${bil?"Fiskebilen":"Bring"}</b>
+        <div class="small">${bil?"Torsdag 11. september kl. 16–20, SMS 30 min før":"Fredag 12. september, vindu 08–17. Rett i frys."}</div></div></li>
+    </ul>
+    ${gift?`<p class="small" style="margin-top:12px">Gavekasse: ${gift.left} leveringer igjen etter denne. Stopper av seg selv.</p>`:""}
+    ${S.noteHome?`<p class="small" style="margin-top:12px">Hvis du ikke er hjemme: ${esc(S.noteHome)}</p>`:""}
+    <div class="stub" style="margin-top:16px">Ikke aktivt i demoen: e-post og SMS sendes ikke ut.</div>
+  </div>
+  ${referBlock("done")}
+  <div class="row" style="justify-content:center;margin-top:24px">
+    <button class="btn ghost" onclick="go('mine')">Se abonnementet mitt</button></div>`;
+}
+
+const _payP0=pay;
+pay=function(){
+  if(S.fail){ _payP0(); return; }
+  (S.addons||[]).forEach(id=>{ if(!S.box.includes(id)) S.box.push(id); });
+  S.addons=[];
+  S.boxesReceived=(S.boxesReceived||0)+1;
+  if(S.gift && S.gift.left>0){
+    S.gift.left--;
+    if(S.gift.left<=0){ S.paused=true; }
+  }
+  persistDemo();
+  _payP0();
+  if(S.gift && S.gift.left<=0) toast("Gavekassen er ferdig. Ingen mer trekk.");
+};
+
+function weekPostText(){
+  const arts=CATCH_IDS.map(id=>item(id)).filter(Boolean);
+  const names=arts.map(p=>p.n+" ("+(p.fangst||"")+", "+(p.fao||p.o)+")").join("\n");
+  return `Ukens fangst hos Havkassen
+Frossen samme døgn. Ingen binding. Hopp over når du vil.
+
+${names||"Velg arter under Ukens fangst."}
+
+Prøvekasse 449 kr. Neste uke til vanlig pris.
+https://adea-it.no/demo/havkassen/?utm_source=facebook&utm_medium=social&utm_campaign=ukens-fangst`;
+}
+function productFeedTsv(){
+  const head=["id","title","description","price","availability","link","image_link","brand","gtin"].join("\t");
+  const rows=P.map(p=>[
+    p.slug||p.id, p.n, (p.t||"").replace(/\t/g," "),
+    (p.pr.toFixed(2)+" NOK"),
+    p.sold?"out of stock":"in stock",
+    "https://adea-it.no/demo/havkassen/#vare",
+    schemaImageUrl(),
+    "Havkassen",
+    ""
+  ].join("\t"));
+  return [head].concat(rows).join("\n");
+}
+function fikenCsv(){
+  return [
+    "Dato;Bilag;Beskrivelse;Konto;Mva;Beløp",
+    "2026-09-06;1043;Kasse uke 39, visningsdata;3000;25%;2060",
+    "2026-09-06;1043;Frakt Fiskebilen;3100;25%;49",
+    "2026-09-05;1042;Kasse uke 37, visningsdata;3000;25%;1839"
+  ].join("\n");
+}
+function copyText(id, msg){
+  const el=document.getElementById(id); if(!el) return;
+  const t=el.value||el.textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast(msg||"Kopiert.")).catch(()=>toast("Kopier manuelt."));
+  } else { el.select(); document.execCommand("copy"); toast(msg||"Kopiert."); }
+}
+function drawVekst(){
+  const box=document.getElementById("vekstBody"); if(!box) return;
+  box.innerHTML=`
+    <div class="panel" style="margin-bottom:16px">
+      <h3>Kopier ukens innlegg</h3>
+      <p class="small">Utkast til Facebook og Instagram. Publiser i Meta Business Suite. Inbox, Reels og TikTok bor der, ikke i dette panelet.</p>
+      <textarea class="feedbox" id="weekPost">${weekPostText()}</textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="copyText('weekPost','Utkast kopiert. Lim inn i Meta.')">Kopier tekst</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <h3>Produktfeed</h3>
+      <p class="small">TSV til Meta Commerce og Google Merchant. Godkjenning hos Google tar ofte noen virkedager. GTIN mangler i visningen.</p>
+      <textarea class="feedbox" id="feedBox">${productFeedTsv()}</textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost" onclick="copyText('feedBox','Feed kopiert.')">Kopier feed</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <h3>Fiken-eksport, visning</h3>
+      <p class="small">Ikke ekte sync. Dette er formatet en ferdig løsning kan sende. Ingen bokføring skjer her.</p>
+      <textarea class="feedbox" id="fikenBox">${fikenCsv()}</textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost" onclick="copyText('fikenBox','CSV kopiert.')">Kopier CSV</button>
+      </div>
+    </div>
+    <p class="small">SEO i admin: tittel, schema og sitemap. Ranking, Google Bedrift og Core Web Vitals er utenfor dette panelet.</p>`;
+}
+
+const _persistP1=persistDemo;
+persistDemo=function(){
+  _persistP1();
+  try{
+    const raw=JSON.parse(localStorage.getItem(DEMO_KEY)||"{}");
+    raw.addons=S.addons; raw.boxesReceived=S.boxesReceived; raw.gift=S.gift;
+    localStorage.setItem(DEMO_KEY, JSON.stringify(raw));
+  }catch(e){}
+};
+
+const _goApplyP1=goApply;
+goApply=function(s, opts){
+  if(s!=="item" && s!=="recipe") clearJsonLd();
+  _goApplyP1(s, opts);
+  if(s==="meal" || s==="home") drawRecipeIndex();
+};
+
+const _applyHashP1=applyHash;
+applyHash=function(){
+  const raw=(location.hash||"#").replace(/^#/,"");
+  if(raw.startsWith("oppskrift")){
+    const slug=raw.split("/")[1];
+    const r=slug?recipeBySlug(slug):RECIPES[0];
+    if(r){ openRecipe(r.id,{skipHash:true,noMotion:true}); return; }
+  }
+  _applyHashP1();
+};
+
+const _setAdminP1=window.setAdminTab;
+window.setAdminTab=function(t){
+  _setAdminP1(t);
+  if(t==="vekst") drawVekst();
+};
+
+(function bootP1(){
+  try{
+    const d=JSON.parse(localStorage.getItem(DEMO_KEY)||"null");
+    if(d){
+      if(Array.isArray(d.addons)) S.addons=d.addons;
+      if(typeof d.boxesReceived==="number") S.boxesReceived=d.boxesReceived;
+      if(d.gift) S.gift=d.gift;
+    }
+  }catch(e){}
+  document.addEventListener("click", e=>{
+    const card=e.target.closest(".mealcard");
+    if(!card || e.target.closest("button")) return;
+    const t=card.querySelector("h4"); if(!t) return;
+    const r=RECIPES.find(x=>x.tittel===t.textContent);
+    if(r) openRecipe(r.id);
+  });
+  rebuildFilters();
+  drawShop();
+  drawRecipeIndex();
 })();
 
 </script>
