@@ -407,8 +407,69 @@ td{padding:11px 10px;border-bottom:1px solid var(--line)}
   .sum{position:static}
 }
 /* --- vei A: demo-dør, skuff, fangst, motion --- */
-html{view-transition-name:none}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.28s}
+/* P2: butikk-følelse, kurv, overganger */
+html{view-transition-name:root}
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-old(root){animation:vtLeave .4s cubic-bezier(.22,1,.36,1) both}
+  ::view-transition-new(root){animation:vtEnter .48s cubic-bezier(.22,1,.36,1) both}
+}
+@keyframes vtLeave{to{opacity:0;transform:translateY(-8px)}}
+@keyframes vtEnter{from{opacity:0;transform:translateY(18px)}}
+.screen.on{animation:screenIn .42s cubic-bezier(.22,1,.36,1) both}
+@keyframes screenIn{from{opacity:0;transform:translateY(12px)}}
+.vt-on .screen.on{animation:none}
+.btn{transition:background .18s ease,transform .15s ease,box-shadow .18s ease,opacity .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.ghost:active{transform:translateY(1px) scale(.98)}
+.chip{transition:background .18s ease,color .18s ease,border-color .18s ease,transform .15s ease}
+.chip:active{transform:scale(.97)}
+.card{transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card .thumb{overflow:hidden}
+.card .thumb img{transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.card:hover .thumb img{transform:scale(1.06)}
+.card-hit{display:flex;flex-direction:column;width:100%;border:0;background:none;text-align:left;padding:0;color:inherit;font:inherit;cursor:pointer;border-radius:0}
+.card-add{margin:0 12px 12px;width:calc(100% - 24px);min-height:42px;padding:10px 14px;font-size:14px}
+.card-add.just{background:var(--ok)}
+.tier{transition:transform .22s ease,box-shadow .22s ease}
+.tier:hover{transform:translateY(-3px)}
+.catch-feat{transition:transform .28s ease,box-shadow .28s ease}
+.catch-feat .card-hit{flex:1;min-height:0;display:flex;flex-direction:column}
+.catch-feat:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.catch-feat .thumb{overflow:hidden}
+.catch-feat .thumb img{transition:transform .8s cubic-bezier(.22,1,.36,1)}
+.catch-feat:hover .thumb img{transform:scale(1.04)}
+.detail .thumb{overflow:hidden}
+.detail .thumb img{transition:transform .8s ease}
+.detail .thumb:hover img{transform:scale(1.04)}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.qty button{width:44px;height:44px;border:0;background:var(--surface-2);font-size:20px;line-height:1;min-height:44px}
+.qty button:hover{background:var(--sunk)}
+.qty span{min-width:36px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.cart{transition:transform .18s ease,background .18s ease}
+.cart:hover{background:var(--surface-2)}
+.cart b{display:inline-block}
+.cart b.pop{animation:bagPop .42s cubic-bezier(.22,1,.36,1)}
+@keyframes bagPop{0%{transform:scale(1)}35%{transform:scale(1.38)}100%{transform:scale(1)}}
+.cartbg{position:fixed;inset:0;background:rgba(6,40,46,.4);z-index:72;display:none;justify-content:flex-end}
+.cartbg.on{display:flex}
+.cartdraw{width:min(420px,100%);background:var(--surface);height:100%;overflow:auto;padding:22px 20px 28px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;transform:translateX(18px);opacity:0}
+.cartbg.on .cartdraw{animation:cartIn .42s cubic-bezier(.22,1,.36,1) both}
+@keyframes cartIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.cartdraw h2{font-family:Archivo,sans-serif;font-size:20px;margin:0 0 14px}
+.cartline{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.cartline .cthumb{width:64px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--sea-soft)}
+.cartline .cthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.cartline .cn{flex:1;min-width:0}
+.cartfoot{margin-top:auto;padding-top:16px}
+.pdp-added{display:none;margin-top:10px}
+.pdp-added.on{display:block}
+body:not(.admin-mode) .stub{display:none}
+@media (prefers-reduced-motion:reduce){
+  .screen.on,.card,.btn,.chip,.tier,.catch-feat,.thumb img{animation:none!important;transition:none!important;transform:none!important}
+}
 .admintitle{font-family:Archivo,system-ui,sans-serif;font-size:22px;font-weight:650;letter-spacing:-.01em;margin:6px 0 4px}
 .adminlock{margin-left:0}
 body.admin-mode .adminlock{display:none}
@@ -510,7 +571,7 @@ body.admin-mode .adminlock{display:none}
   <button class="themebtn adminlock" onclick="go('admin')" aria-label="Butikkadmin" title="Butikkadmin">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
   </button>
-  <button class="cart" onclick="go('checkout')">Kurv <b id="cartn">0</b></button>
+  <button class="cart" onclick="openCart()" aria-label="Åpne kurv">Kurv <b id="cartn">0</b></button>
 </div></header>
 
 <main>
@@ -1023,7 +1084,7 @@ body.admin-mode .adminlock{display:none}
 
 <div class="chatpanel" id="chatpanel" role="dialog" aria-label="Chat med Havkassen">
   <div class="chathead">
-    <div><b>Havkassen-assistenten</b><div class="sub">Ekte AI-svar · kjenner kun varene i denne demoen</div></div>
+    <div><b>Havkassen-assistenten</b><div class="sub">Spør om varer, kasser og levering</div></div>
     <button onclick="closeChat()" aria-label="Lukk chat">✕</button>
   </div>
   <div class="chatmsgs" id="chatmsgs"></div>
@@ -1032,6 +1093,15 @@ body.admin-mode .adminlock{display:none}
            onkeydown="if(event.key==='Enter')sendChat()" aria-label="Skriv melding">
     <button class="btn" id="chatSendBtn" onclick="sendChat()">Send</button>
   </div>
+</div>
+<div class="cartbg" id="cartBg">
+  <aside class="cartdraw" id="cartPanel" role="dialog" aria-label="Kurv">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h2>Kurven din</h2>
+      <button class="btn ghost" style="min-height:36px;padding:6px 12px" onclick="closeCart()">Lukk</button>
+    </div>
+    <div id="cartBody" style="flex:1;display:flex;flex-direction:column"></div>
+  </aside>
 </div>
 <div class="toast" id="toast" role="status"></div>
 <div class="drawer-bg" id="drawerBg">
@@ -3524,6 +3594,304 @@ window.setAdminTab=function(t){
   rebuildFilters();
   drawShop();
   drawRecipeIndex();
+})();
+
+
+/* ===== P2: ekte kurv, bli på produktsiden, sideoverganger ===== */
+if(typeof S.pdpQty==="undefined") S.pdpQty=1;
+if(!Array.isArray(S.cart)) S.cart=[];
+
+function cartCount(){ return (S.cart||[]).length; }
+function cartGroups(){
+  const map={};
+  (S.cart||[]).forEach(id=>{
+    if(!map[id]) map[id]={p:item(id),n:0};
+    map[id].n++;
+  });
+  return Object.values(map).filter(x=>x.p);
+}
+function updateCartBadge(pop){
+  const b=document.getElementById("cartn");
+  if(!b) return;
+  b.textContent=cartCount();
+  if(pop){ b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
+}
+
+function addToCart(id, n){
+  const p=item(id); if(!p||p.sold) return false;
+  n=Math.max(1, parseInt(n,10)||1);
+  for(let i=0;i<n;i++) S.cart.push(id);
+  persistDemo();
+  updateCartBadge(true);
+  drawCart();
+  return true;
+}
+function addCart(id, n){ addToCart(id, n||1); }
+
+function setPdpQty(d){
+  S.pdpQty=Math.max(1, Math.min(12, (S.pdpQty||1)+d));
+  const el=document.getElementById("pdpQty");
+  if(el) el.textContent=S.pdpQty;
+}
+function addFromPdp(id){
+  const n=S.pdpQty||1;
+  if(!addToCart(id, n)) return;
+  const btn=document.getElementById("pdpAdd");
+  if(btn){
+    btn.textContent=n>1?("Lagt "+n+" i kurven"):"Lagt i kurven";
+    btn.classList.add("just");
+    setTimeout(()=>{ btn.textContent="Legg i kurv"; btn.classList.remove("just"); }, 1400);
+  }
+  const note=document.getElementById("pdpAdded");
+  if(note) note.classList.add("on");
+  openCart();
+}
+function addFromCard(id, ev){
+  if(ev) ev.stopPropagation();
+  if(!addToCart(id,1)) return;
+  const btn=ev&&ev.currentTarget;
+  if(btn){
+    const prev=btn.textContent;
+    btn.textContent="I kurven";
+    btn.classList.add("just");
+    setTimeout(()=>{ btn.textContent=prev; btn.classList.remove("just"); }, 1200);
+  }
+  openCart();
+}
+
+function rmCartLine(id){
+  S.cart=S.cart.filter(x=>x!==id);
+  persistDemo();
+  updateCartBadge(false);
+  drawCart();
+}
+function chgCartLine(id, d){
+  if(d<0){
+    const i=S.cart.lastIndexOf(id);
+    if(i>=0) S.cart.splice(i,1);
+  } else S.cart.push(id);
+  persistDemo();
+  updateCartBadge(d>0);
+  drawCart();
+}
+
+function drawCart(){
+  const box=document.getElementById("cartBody"); if(!box) return;
+  const lines=cartGroups();
+  const sum=lines.reduce((a,l)=>a+l.p.pr*l.n,0);
+  if(!lines.length){
+    box.innerHTML=`<div class="empty" style="padding:28px 8px"><h3>Kurven er tom</h3>
+      <p class="small">Legg en filet i kurven fra produktsiden. Du blir værende og kan fortsette å handle.</p>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="closeCart();go('shop')">Til butikken</button></div></div>`;
+    return;
+  }
+  box.innerHTML=`<div>${lines.map(l=>`<div class="cartline">
+      <div class="cthumb">${PHOTOS[l.p.id]?`<img src="${PHOTOS[l.p.id]}" alt="">`:""}</div>
+      <div class="cn"><b>${l.p.n}</b><div class="small">${l.p.w} g · ${kr(l.p.pr)}</div>
+        <div class="qty" style="margin-top:8px">
+          <button type="button" onclick="chgCartLine(${l.p.id},-1)" aria-label="Færre">−</button>
+          <span>${l.n}</span>
+          <button type="button" onclick="chgCartLine(${l.p.id},1)" aria-label="Flere">+</button>
+        </div>
+      </div>
+      <div>
+        <div class="num" style="font-weight:700">${kr(l.p.pr*l.n)}</div>
+        <button class="btn ghost" style="min-height:32px;padding:4px 8px;margin-top:8px;font-size:13px" onclick="rmCartLine(${l.p.id})">Fjern</button>
+      </div>
+    </div>`).join("")}</div>
+    <div class="cartfoot">
+      <div class="sline tot" style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:12px">
+        <span>Sum</span><span class="num">${kr(sum)}</span></div>
+      <button class="btn" style="width:100%" onclick="closeCart();go('checkout')">Til kassen</button>
+      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeCart();go('shop')">Fortsett å handle</button>
+    </div>`;
+}
+function openCart(){
+  drawCart();
+  const bg=document.getElementById("cartBg");
+  if(bg) bg.classList.add("on");
+}
+function closeCart(){
+  const bg=document.getElementById("cartBg");
+  if(bg) bg.classList.remove("on");
+}
+
+function clearVt(){
+  document.querySelectorAll(".js-vt").forEach(el=>{
+    el.style.viewTransitionName="none";
+    el.classList.remove("js-vt");
+  });
+}
+function markVt(el, name){
+  if(!el) return;
+  el.style.viewTransitionName=name;
+  el.classList.add("js-vt");
+}
+
+function card(p){
+  return `<article class="card">
+    <button type="button" class="card-hit" onclick="openItem(${p.id}, this.querySelector('.thumb'))">
+      ${thumb(p)}
+      <div class="cbody"><div class="cname">${p.n}</div>
+      <div class="cmeta">${p.w} g · ${p.bein||p.o}</div>
+      <div class="orig">${originLine(p)}</div>
+      <div class="cprice">${kr(p.pr)}<span class="per">${kgPris(p)} kr/kg · ca. ${kr(porsjonKr(p))} / 150 g</span></div></div>
+    </button>
+    ${p.sold?"":`<button type="button" class="btn card-add" onclick="addFromCard(${p.id}, event)">Legg i kurv</button>`}
+  </article>`;
+}
+
+openItem=function(id, srcThumb){
+  const p=item(id); if(!p) return;
+  const name="fish-"+id;
+  clearVt();
+  const src=srcThumb && srcThumb.classList && srcThumb.classList.contains("thumb")
+    ? srcThumb
+    : (srcThumb && srcThumb.querySelector ? srcThumb.querySelector(".thumb") : null);
+  if(src) markVt(src, name);
+  S.pdpQty=1; S.pdpId=id;
+  const run=()=>{
+    document.getElementById("itemBody").innerHTML=`
+   <button class="btn ghost" onclick="go('shop')" style="margin-bottom:18px">← Alle varer</button>
+   <div class="detail"><div class="pdp-media">${thumb(p).replace('<div class="thumb"','<div class="thumb js-vt" style="view-transition-name:'+name+'"')}</div><div>
+     <p class="eyebrow">${p.k}</p>
+     <h1 class="fr" style="font-size:42px;letter-spacing:-.02em;font-variation-settings:'opsz' 144;margin:10px 0 12px">${p.n}</h1>
+     <p class="lead">${p.t}</p>
+     <p class="small" style="margin:8px 0 0">Varen er <b>frossen samme døgn</b> som den pakkes. Tint skal merkes opptint.</p>
+     <ul class="spec">
+       <li><span>Vekt</span><span class="num">${p.w} g</span></li>
+       <li><span>Pris per kg</span><span class="num">${kgPris(p)} kr</span></li>
+       <li><span>Ca. per 150 g porsjon</span><span class="num">${kr(porsjonKr(p))}</span></li>
+       <li><span>Vill / oppdrett</span><span>${p.fangst||"—"}</span></li>
+       <li><span>Område</span><span>${p.fao||p.o}</span></li>
+       <li><span>Redskap</span><span>${p.redskap||"—"}</span></li>
+       <li><span>Frosset</span><span class="num">${p.frossen||"—"}</span></li>
+       <li><span>Bein og skinn</span><span>${p.bein||"—"}</span></li>
+       <li><span>Medlemspris</span><span class="num">${kr(Math.round(p.pr*.85))}</span></li>
+     </ul>
+     <div class="pres on good" style="margin:16px 0 8px">Smaksgaranti til den er tint. Lukt eller tekstur som ikke stemmer: ny vare eller tilgode. Ingen retur av fisk.</div>
+     <div style="font-family:Fraunces,serif;font-size:36px;font-weight:600;margin:16px 0 4px" class="num">${kr(p.pr)}</div>
+     ${p.sold?`<div class="pres on bad" style="margin-bottom:12px">Utsolgt akkurat nå. Ny leveranse ventes fredag 11. september.</div>`:`
+     <div class="row" style="margin-top:10px;align-items:center">
+       <div class="qty" role="group" aria-label="Antall">
+         <button type="button" onclick="setPdpQty(-1)" aria-label="Færre">−</button>
+         <span id="pdpQty">1</span>
+         <button type="button" onclick="setPdpQty(1)" aria-label="Flere">+</button>
+       </div>
+       <button class="btn" id="pdpAdd" onclick="addFromPdp(${p.id})">Legg i kurv</button>
+       <button class="btn ghost" onclick="addToNextBox(${p.id})">Neste kasse</button>
+     </div>
+     <p class="small pdp-added" id="pdpAdded">I kurven. Fortsett å handle, eller gå til kassen fra kurven oppe til høyre.</p>`}
+     </div></div>`;
+    const dest=document.querySelector("#itemBody .thumb");
+    if(dest) markVt(dest, name);
+    if(typeof setJsonLd==="function"){
+      setJsonLd({
+        "@context":"https://schema.org",
+        "@type":"Product",
+        name:p.n,
+        description:p.t+" Frossen samme døgn. "+originLine(p),
+        image:schemaImageUrl(),
+        brand:{ "@type":"Brand", name:"Havkassen" },
+        offers:{
+          "@type":"Offer",
+          price:p.pr,
+          priceCurrency:"NOK",
+          availability:p.sold?"https://schema.org/OutOfStock":"https://schema.org/InStock",
+          url:pageUrl()+"#vare"
+        }
+      });
+    }
+    go("item",{noMotion:true});
+  };
+  if(!reducedMotion() && document.startViewTransition){
+    document.documentElement.classList.add("vt-on");
+    document.startViewTransition(run);
+  } else run();
+};
+
+function addToNextBox(id){
+  if(S.locked){toast("Kassen er låst. Hopp over eller vent til neste uke.");return;}
+  if(!S.box.includes(id)) S.box.push(id);
+  persistDemo();
+  toast("Lagt i neste kasse. Du kan bytte mer på Min side.");
+}
+
+function drawHome(){
+  const el=document.getElementById("homeCatch");
+  if(!el) return;
+  const ids=CATCH_IDS.filter(id=>item(id));
+  const feat=item(ids[0]||1), side=ids.slice(1,3).map(item).filter(Boolean);
+  if(!feat){el.innerHTML="";return;}
+  el.innerHTML=`
+    <div class="catch-feat">
+      <button type="button" class="card-hit" onclick="openItem(${feat.id}, this.querySelector('.thumb'))">${thumb(feat)}
+        <div class="cbody">
+          <p class="herotag" style="color:var(--sea);opacity:1">Ukens fangst</p>
+          <div class="cname">${feat.n}</div>
+          <div class="cmeta">${feat.w} g · ${feat.bein||""}</div>
+          <div class="orig">${originLine(feat)}</div>
+          <p class="small" style="margin:8px 0 10px">${feat.t||""}</p>
+          <div class="cprice">${kr(feat.pr)}<span class="per">${kgPris(feat)} kr/kg</span></div>
+        </div>
+      </button>
+      ${feat.sold?"":`<button type="button" class="btn card-add" onclick="addFromCard(${feat.id}, event)">Legg i kurv</button>`}
+    </div>
+    ${side.map(card).join("")}`;
+}
+
+function applyHash(){
+  const raw=(location.hash||"#").replace(/^#/,"");
+  if(raw.startsWith("oppskrift")){
+    const slug=raw.split("/")[1];
+    const r=slug&&typeof recipeBySlug==="function"?recipeBySlug(slug):RECIPES[0];
+    if(r){ openRecipe(r.id,{skipHash:true,noMotion:!window._hkReady}); return; }
+  }
+  const base=raw.split("/")[0];
+  const screen=HASH_TO_SCREEN[base];
+  if(screen){
+    if(screen==="admin"){
+      const sub=raw.split("/")[1];
+      if(sub && ADMIN_KEYS.includes(sub)) window._adminTab=sub;
+    }
+    go(screen,{skipHash:true,noMotion:!window._hkReady});
+  }
+}
+
+const _goP2=go;
+go=function(s, opts){
+  opts=opts||{};
+  if(!opts.noMotion && !reducedMotion() && document.startViewTransition){
+    document.documentElement.classList.add("vt-on");
+    document.startViewTransition(()=>_goP2(s, Object.assign({}, opts, {noMotion:true})));
+    return;
+  }
+  _goP2(s, opts);
+};
+
+const _persistP2=persistDemo;
+persistDemo=function(){
+  _persistP2();
+  try{
+    const raw=JSON.parse(localStorage.getItem(DEMO_KEY)||"{}");
+    raw.cart=S.cart;
+    localStorage.setItem(DEMO_KEY, JSON.stringify(raw));
+  }catch(e){}
+};
+
+(function bootP2(){
+  try{
+    const d=JSON.parse(localStorage.getItem(DEMO_KEY)||"null");
+    if(d && Array.isArray(d.cart)) S.cart=d.cart;
+  }catch(e){}
+  updateCartBadge(false);
+  const bg=document.getElementById("cartBg");
+  if(bg) bg.addEventListener("click", e=>{ if(e.target===bg) closeCart(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeCart(); });
+  if(typeof drawShop==="function") drawShop();
+  if(typeof drawHome==="function") drawHome();
+  if(typeof drawRecipeIndex==="function") drawRecipeIndex();
+  window._hkReady=true;
 })();
 
 </script>
