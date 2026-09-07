@@ -594,6 +594,19 @@ body.admin-mode .adminlock{display:none}
   .grid,.recipegrid,.tiers,.catch-grid{grid-template-columns:minmax(0,1fr)}
 }
 
+/* P4: admin-dybde som original CMS */
+.subcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.subcard-head{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
+.subcard-head:hover{background:var(--surface-2)}
+.subid{font-size:11px;font-weight:700;background:var(--sea-soft);color:var(--sea);padding:3px 8px;border-radius:20px;flex-shrink:0;margin-top:2px}
+.subbody{padding:0 16px 14px;border-top:1px solid var(--line)}
+.boxrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.boxrow:last-child{border-bottom:0}
+.mailtpl{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.mailtpl:last-child{border-bottom:0}
+.mailtpl .mt-name{flex:1;min-width:0}
+#orderFilters .chip{min-height:40px;padding:8px 14px;font-size:13.5px}
+
 </style>
 </head>
 <body>
@@ -942,7 +955,9 @@ body.admin-mode .adminlock{display:none}
         <p class="small" style="margin-top:-8px">Administrer kundeabonnementer og kvartalsvise leveringsbokser.</p>
         <div class="adminsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="Søk etter navn, e-post eller telefon..." oninput="setMemberSearch(this.value)"></div>
-        <div class="tw"><table id="subTable"></table></div>
+        <div class="filters" id="memberFilters" style="margin:2px 0 14px"></div>
+        <div id="subList"></div>
+        <div class="tw" style="display:none"><table id="subTable"></table></div>
       </div>
 
       <div id="admin-kunder" class="apanel" style="display:none">
@@ -4001,6 +4016,385 @@ drawShop=function(){
   drawHome();
   drawShop();
   drawRecipeIndex();
+})();
+
+
+/* ===== P4: admin som arbeidsverktøy, ikke kulisse ===== */
+const PACKS=["Klar til pakking","Pakket","Ferdigbehandlet","På vent"];
+if(typeof MAIL_TEMPLATES==="undefined"){
+  var MAIL_TEMPLATES=[
+    {id:"velkomst",n:"Velkomst",on:true,emne:"Velkommen til Havkassen",kropp:"Hei {navn}. Du er med. Første kasse pakkes etter lock søndag."},
+    {id:"ordre",n:"Ordrebekreftelse",on:true,emne:"Vi har mottatt bestilling {ordre}",kropp:"Takk. Vi pakker {innhold}. Faktura kommer på e-post."},
+    {id:"lock",n:"Påminnelse før lock",on:true,emne:"Kassen låses i morgen",kropp:"Du kan hoppe over eller bytte innhold fram til søndag 23:59."},
+    {id:"boks",n:"Boksvarsel / SMS-følge",on:true,emne:"Kassen er på vei",kropp:"Fiskebilen er 30 minutter unna, eller Bring er underveis. Rett i frys."},
+    {id:"levert",n:"Levert",on:true,emne:"Kassen er levert",kropp:"Smaksgaranti til den er tint. Si ifra hvis noe ikke stemmer."},
+    {id:"pause",n:"Pause bekreftet",on:true,emne:"Abonnementet er pauset",kropp:"Ingen kasse går ut før du gjenopptar. Ingen trekk i pausen."},
+    {id:"stopp",n:"Oppsigelse",on:true,emne:"Havklubben er avsluttet",kropp:"Siste ulåste kasse sendes ikke. Du kan starte igjen når du vil."},
+    {id:"passord",n:"Glemt passord",on:true,emne:"Tilbakestill passord",kropp:"Lenke gyldig i 30 minutter. Gikk ikke du? Se bort fra denne."},
+    {id:"faktura",n:"Faktura",on:true,emne:"Faktura {ordre}",kropp:"14 dagers frist. I produksjon går denne via Riverty."}
+  ];
+}
+
+function ensureOrderDepth(){
+  ORDERS.forEach((o,i)=>{
+    if(!o.fth) o.fth="FTH-"+String(178-i).padStart(4,"0");
+    if(!o.kid) o.kid="#"+String(100104+i);
+    if(!o.pack){
+      o.pack=o.status==="Pakkes"?"Klar til pakking":o.status==="Levert"?"Ferdigbehandlet":o.status==="Purres"?"På vent":"Pakket";
+    }
+    if(o.pack==="Ferdigbehandlet" && o.lev.indexOf("Bring")>=0 && !o.spor) o.spor="TEST-"+o.id.slice(-4);
+  });
+  if(!ORDERS.some(o=>o.pack==="Pakket")){
+    const k=ORDERS.filter(o=>o.pack==="Klar til pakking")[1];
+    if(k) k.pack="Pakket";
+  }
+}
+function ensureMemberBoxes(){
+  MEMBERS_TABLE.forEach((m,i)=>{
+    if(!m.kid) m.kid="#"+String(100104+i);
+    if(m.boxes && m.boxes.length) return;
+    const n=m.status==="Oppsagt"?2:4;
+    m.boxes=[];
+    for(let w=0;w<n;w++){
+      const uke=39-w;
+      const st=w===0?(m.status==="Aktiv"?"Klar til pakking":m.status==="Pauset"?"Hopper over":"Stoppet"):"Levert";
+      m.boxes.push({fth:"FTH-"+String(150+i*4+w).padStart(4,"0"),uke,status:st,innhold:["Laksefilet","Torskeloin","Seifilet"].slice(0,2+(w%2))});
+    }
+  });
+}
+function seedAreas(){
+  const extra=[
+    ["5010","Bergen, Nygård","Vestland","Fiskebilen","49 kr"],
+    ["5020","Bergen, Møhlenpris","Vestland","Fiskebilen","49 kr"],
+    ["5053","Bergen, Fyllingsdalen","Vestland","Fiskebilen","49 kr"],
+    ["5100","Isdalstø","Vestland","Bring","149 kr"],
+    ["5155","Bønes","Vestland","Fiskebilen","49 kr"],
+    ["5251","Søreidgrend","Vestland","Bring","149 kr"],
+    ["5300","Kleppestø","Vestland","Bring","149 kr"],
+    ["0185","Oslo, Grünerløkka","Oslo","Bring","149 kr"],
+    ["0250","Oslo, Frogner","Oslo","Bring","149 kr"],
+    ["0484","Oslo, Løren","Oslo","Bring","149 kr"],
+    ["4006","Stavanger sentrum","Rogaland","Bring","149 kr"],
+    ["4010","Stavanger, Våland","Rogaland","Bring","149 kr"],
+    ["4306","Sandnes","Rogaland","Bring","149 kr"],
+    ["5531","Haugesund, Bø","Rogaland","Bring","149 kr"],
+    ["4611","Kristiansand","Agder","Bring","149 kr"],
+    ["4876","Grimstad","Agder","—","—"],
+    ["1470","Lørenskog","Akershus","Bring","149 kr"],
+    ["2000","Lillestrøm","Akershus","Bring","149 kr"],
+    ["7010","Trondheim","Trøndelag","Bring","149 kr"],
+    ["7500","Stjørdal","Trøndelag","—","—"],
+    ["9008","Tromsø","Troms","—","—"]
+  ];
+  extra.forEach(([postnr,sted,fylke,metode,frakt])=>{
+    if(!AREAS_TABLE.some(a=>a.postnr===postnr)) AREAS_TABLE.push({postnr,sted,fylke,metode,frakt});
+  });
+}
+
+function packCount(s){ return ORDERS.filter(o=>o.pack===s).length; }
+
+drawOrderFilters=function(){
+  const tabs=document.getElementById("orderSubtabs");
+  const fil=document.getElementById("orderFilters");
+  if(!tabs||!fil) return;
+  const levN=ORDERS.filter(o=>o.pack!=="På vent").length;
+  tabs.innerHTML=`<button class="tabbtn" role="tab" aria-selected="${orderSubTab==="bestillinger"}" onclick="setOrderSubTab('bestillinger')">Bestillinger <span class="pill se">${ORDERS.length}</span></button>
+    <button class="tabbtn" role="tab" aria-selected="${orderSubTab==="leveranser"}" onclick="setOrderSubTab('leveranser')">Leveranser <span class="pill se">${levN}</span></button>`;
+  fil.style.display=orderSubTab==="bestillinger"?"":"none";
+  const chips=[["Alle",ORDERS.length]].concat(PACKS.map(s=>[s,packCount(s)]));
+  fil.innerHTML=chips.map(([s,n])=>`<button class="chip" aria-pressed="${s===orderFilter}" onclick="setOrderFilter('${s}')">${s} ${n}</button>`).join("");
+};
+
+drawOrders=function(){
+  const table=document.getElementById("orderTable"); if(!table) return;
+  let rows=ORDERS.slice();
+  if(orderSubTab==="bestillinger" && orderFilter!=="Alle") rows=rows.filter(o=>o.pack===orderFilter);
+  if(orderSubTab==="leveranser") rows=rows.filter(o=>o.pack!=="På vent");
+  if(orderSearch){
+    const q=orderSearch;
+    rows=rows.filter(o=>(o.id+" "+o.fth+" "+o.navn+" "+o.lev+" "+(o.spor||"")).toLowerCase().includes(q));
+  }
+  if(orderSubTab==="bestillinger"){
+    table.innerHTML=`<thead><tr><th>Bestilling</th><th>Kunde</th><th>Type</th><th>Dato</th><th>Pakking</th></tr></thead>
+    <tbody>${rows.length?rows.map(o=>`<tr class="rowclick" onclick="editOrder('${o.id}')">
+      <td><span class="pill se">${o.kid||""}</span><div><b>${o.id}</b><div class="small">${o.fth}</div></div></td>
+      <td>${o.navn}<div class="small">${o.by}</div></td>
+      <td><span class="pill ok">${o.type}</span></td>
+      <td class="small">31. aug 2026</td>
+      <td><span class="pill ${o.pack==="Ferdigbehandlet"?"ok":o.pack==="På vent"?"wa":"se"}">${o.pack}</span></td>
+    </tr>`).join(""):'<tr><td colspan="5" class="small" style="text-align:center;padding:20px">Ingen treff.</td></tr>'}</tbody>`;
+  } else {
+    table.innerHTML=`<thead><tr><th>Levering</th><th>Kunde</th><th>Måte</th><th>Sporing</th><th>Status</th></tr></thead>
+    <tbody>${rows.length?rows.map(o=>{
+      const parts=(o.lev||"").split(" · ");
+      return `<tr class="rowclick" onclick="editOrder('${o.id}')">
+        <td><b>${o.fth}</b><div class="small">${o.id}</div></td>
+        <td>${o.navn}<div class="small">${o.by}</div></td>
+        <td>${parts[0]||""}<div class="small">${parts[1]||""}</div></td>
+        <td class="small">${o.spor||"—"}</td>
+        <td><span class="pill ${o.pack==="Ferdigbehandlet"?"ok":"se"}">${o.pack}</span></td>
+      </tr>`;
+    }).join(""):'<tr><td colspan="5" class="small" style="text-align:center;padding:20px">Ingen leveranser.</td></tr>'}</tbody>`;
+  }
+};
+
+editOrder=function(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  openDrawer(`
+    <h2>${o.fth||o.id}</h2>
+    <p class="small">${esc(o.navn)}, ${esc(o.by)} · ${o.type} · ${kr(o.belop)} · ${o.bet}</p>
+    <div class="field"><label>Pakking</label>
+      <select id="f-pack">${PACKS.map(s=>`<option${o.pack===s?" selected":""}>${s}</option>`).join("")}</select></div>
+    <div class="field"><label>Sporingsnummer</label><input id="f-sp" value="${esc(o.spor||"")}" placeholder="Bring-nummer, tomt for Fiskebilen"></div>
+    <div class="field"><label>Intern merknad</label><textarea id="f-note">${esc(o.note||"")}</textarea></div>
+    <div class="drawer-actions">
+      <button class="btn" onclick="saveOrder('${o.id}')">Lagre</button>
+      <button class="btn ghost" onclick="creditOrder('${o.id}')">Kreditér faktura</button>
+      <button class="btn ghost" onclick="closeDrawer()">Avbryt</button>
+    </div>
+    <p class="small" style="margin-top:12px">Kredit og Bring-booking går ikke mot live her. Statusen lagres i visningen.</p>`);
+};
+
+saveOrder=function(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  o.pack=document.getElementById("f-pack").value;
+  o.spor=document.getElementById("f-sp").value.trim();
+  o.note=document.getElementById("f-note").value.trim();
+  o.status=o.pack==="Ferdigbehandlet"?"Levert":o.pack==="På vent"?"Purres":"Pakkes";
+  if(o.pack==="Ferdigbehandlet" && o.bet==="Forfalt") o.bet="Betalt";
+  persistDemo(); closeDrawer(); drawOrderFilters(); drawOrders();
+  if(typeof drawAdmin==="function") drawAdmin();
+  toast("Ordre oppdatert.");
+};
+
+window.creditOrder=function(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  o.bet="Kreditert"; o.pack="På vent"; o.status="Purres";
+  LOG_TABLE.unshift({tid:stampNow(),type:"Bestilling",melding:"Riverty-kredit lagt i visningskø for "+id+". Ingen ekte faktura.",niva:"ok"});
+  persistDemo(); closeDrawer(); drawOrderFilters(); drawOrders();
+  if(typeof drawLogs==="function") drawLogs();
+  toast("Kredit i kø. Riverty treffes ikke her.");
+};
+
+function stampNow(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,"0");
+  return p(d.getDate())+"."+p(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes());
+}
+
+let memberFilter="Aktiv";
+let expandedMember=null;
+window.setMemberFilter=function(s){ memberFilter=s; drawMembers(); };
+window.toggleMember=function(navn){ expandedMember=expandedMember===navn?null:navn; drawMembers(); };
+
+drawMembers=function(){
+  const fil=document.getElementById("memberFilters");
+  const list=document.getElementById("subList");
+  if(!list) return;
+  if(fil){
+    const chips=["Alle","Aktiv","Pauset","Oppsagt"];
+    fil.innerHTML=chips.map(s=>{
+      const n=s==="Alle"?MEMBERS_TABLE.length:MEMBERS_TABLE.filter(m=>m.status===s).length;
+      return `<button class="chip" aria-pressed="${s===memberFilter}" onclick="setMemberFilter('${s}')">${s} ${n}</button>`;
+    }).join("");
+  }
+  let rows=MEMBERS_TABLE.filter(m=>!memberSearch||(m.navn+" "+m.epost+" "+m.tlf+" "+(m.kid||"")).toLowerCase().includes(memberSearch));
+  if(memberFilter!=="Alle") rows=rows.filter(m=>m.status===memberFilter);
+  list.innerHTML=rows.length?rows.map(m=>{
+    const open=expandedMember===m.navn;
+    const boxes=m.boxes||[];
+    return `<div class="subcard">
+      <button type="button" class="subcard-head" onclick="toggleMember('${esc(m.navn)}')" aria-expanded="${open}">
+        <span class="subid">${m.kid||""}</span>
+        <div style="flex:1;min-width:0"><b>${m.navn}</b>
+          <div class="small">${m.epost} · ${m.tlf}</div>
+          <div class="small">${m.kasse} · ${m.frekvens} · neste ${m.neste}</div></div>
+        <span class="pill ${m.status==="Aktiv"?"ok":m.status==="Pauset"?"wa":"bd"}">${m.status}</span>
+      </button>
+      ${open?`<div class="subbody">
+        <p class="small" style="margin:10px 0 6px">Leveringsbokser</p>
+        ${boxes.map(b=>`<div class="boxrow"><b>${b.fth}</b><span class="small">Uke ${b.uke}</span>
+          <span class="small" style="flex:1">${b.innhold.join(", ")}</span>
+          <span class="pill ${b.status==="Levert"?"ok":b.status==="Hopper over"||b.status==="Stoppet"?"wa":"se"}">${b.status}</span></div>`).join("")}
+        <div class="row" style="margin-top:12px">
+          <button class="btn ghost" onclick="event.stopPropagation();editMember('${esc(m.navn)}')">Endre kasse</button>
+          <button class="btn ghost" onclick="event.stopPropagation();quickMember('${esc(m.navn)}','Pauset')">${m.status==="Pauset"?"Gjenoppta":"Pause"}</button>
+          <button class="btn ghost" onclick="event.stopPropagation();quickMember('${esc(m.navn)}','Oppsagt')">Avslutt</button>
+        </div>
+      </div>`:""}
+    </div>`;
+  }).join(""):'<p class="small" style="padding:16px">Ingen abonnenter matcher.</p>';
+};
+
+window.quickMember=function(navn, status){
+  const m=MEMBERS_TABLE.find(x=>x.navn===navn); if(!m) return;
+  if(m.status===status && status==="Pauset") status="Aktiv";
+  m.status=status;
+  m.neste=status==="Aktiv"?(m.neste&&m.neste!=="—"?m.neste:"Uke 39"):"—";
+  if(m.boxes && m.boxes[0]){
+    if(status==="Pauset") m.boxes[0].status="Hopper over";
+    if(status==="Oppsagt") m.boxes[0].status="Stoppet";
+    if(status==="Aktiv") m.boxes[0].status="Klar til pakking";
+  }
+  persistDemo(); drawMembers();
+  toast(status==="Aktiv"?"Gjenopptatt.":status==="Pauset"?"Pauset. Ingen kasse går ut.":"Avsluttet.");
+};
+
+const AREA_EXTRA=[
+  ["5010","Bergen, Nygård","Vestland","Fiskebilen","49 kr"],
+  ["5020","Bergen, Møhlenpris","Vestland","Fiskebilen","49 kr"],
+  ["5053","Bergen, Fyllingsdalen","Vestland","Fiskebilen","49 kr"],
+  ["5100","Isdalstø","Vestland","Bring","149 kr"],
+  ["5155","Bønes","Vestland","Fiskebilen","49 kr"],
+  ["5251","Søreidgrend","Vestland","Bring","149 kr"],
+  ["5300","Kleppestø","Vestland","Bring","149 kr"],
+  ["0185","Oslo, Grünerløkka","Oslo","Bring","149 kr"],
+  ["0250","Oslo, Frogner","Oslo","Bring","149 kr"],
+  ["0484","Oslo, Løren","Oslo","Bring","149 kr"],
+  ["4006","Stavanger sentrum","Rogaland","Bring","149 kr"],
+  ["4010","Stavanger, Våland","Rogaland","Bring","149 kr"],
+  ["4306","Sandnes","Rogaland","Bring","149 kr"],
+  ["5531","Haugesund, Bø","Rogaland","Bring","149 kr"],
+  ["4611","Kristiansand","Agder","Bring","149 kr"],
+  ["4876","Grimstad","Agder","—","—"],
+  ["1470","Lørenskog","Akershus","Bring","149 kr"],
+  ["2000","Lillestrøm","Akershus","Bring","149 kr"],
+  ["7010","Trondheim","Trøndelag","Bring","149 kr"],
+  ["7500","Stjørdal","Trøndelag","—","—"],
+  ["9008","Tromsø","Troms","—","—"]
+];
+
+drawAreas=function(){
+  const stats=document.getElementById("areaStats");
+  const aktive=AREAS_TABLE.filter(a=>a.metode!=="—").length;
+  const bil=AREAS_TABLE.filter(a=>a.metode==="Fiskebilen").length;
+  if(stats) stats.innerHTML=`
+    <div class="stat"><div class="lb">Postnummer i visningen</div><div class="vl">${AREAS_TABLE.length}</div><div class="dl">Ikke hele Postens register</div></div>
+    <div class="stat"><div class="lb">Aktive</div><div class="vl">${aktive}</div></div>
+    <div class="stat"><div class="lb">Fiskebilen</div><div class="vl">${bil}</div></div>`;
+  const fylker=FYLKER.filter(f=>!areaSearch||f.navn.toLowerCase().includes(areaSearch));
+  const list=document.getElementById("areaList"); if(!list) return;
+  list.innerHTML=fylker.length?fylker.map(f=>{
+    const open=expandedFylke===f.navn;
+    const steder=AREAS_TABLE.filter(a=>a.fylke===f.navn);
+    const nAkt=steder.filter(a=>a.metode!=="—").length;
+    return `<div class="fylkerow">
+      <button class="fylkehead" onclick="toggleFylke('${f.navn}')" aria-expanded="${open}">
+        <span class="fylkeicon">📍</span><b>${f.navn}</b>
+        <span class="pill ${nAkt?"ok":"se"}">${nAkt}</span>
+        <span class="pill se" style="margin-left:auto">${f.kommuner} kommuner</span>
+        <span class="fylkecaret">${open?"▲":"▼"}</span>
+      </button>
+      ${open?`<div class="fylkebody">${steder.length?`<div class="tw"><table>
+        <thead><tr><th>Postnummer</th><th>Sted</th><th>Metode</th><th>Frakt</th><th></th></tr></thead>
+        <tbody>${steder.map(a=>`<tr><td class="num"><b>${a.postnr}</b></td><td>${a.sted}</td>
+          <td><span class="pill ${a.metode==="Fiskebilen"?"se":a.metode==="Bring"?"ok":"wa"}">${a.metode}</span></td>
+          <td class="num">${a.frakt}</td>
+          <td><button class="btn ghost" style="padding:6px 10px;min-height:32px" onclick="event.stopPropagation();cycleArea('${a.postnr}')">${a.metode==="—"?"Aktiver Bring":a.metode==="Bring"?"Sett Fiskebil":"Slå av"}</button></td></tr>`).join("")}</tbody></table></div>`
+        :`<p class="small" style="padding:14px 4px">Ingen postnummer i visningen for ${f.navn} ennå.</p>`}</div>`:""}
+    </div>`;
+  }).join(""):"<p class='small' style='padding:14px'>Ingen fylker matcher.</p>";
+};
+
+window.cycleArea=function(postnr){
+  const a=AREAS_TABLE.find(x=>x.postnr===postnr); if(!a) return;
+  if(a.metode==="—"){ a.metode="Bring"; a.frakt="149 kr"; PNR[postnr]={t:"bring",s:"Bring, dato og vindu. Frakt 149 kr."}; }
+  else if(a.metode==="Bring"){ a.metode="Fiskebilen"; a.frakt="49 kr"; PNR[postnr]={t:"bil",s:"Fiskebilen. Fast frakt 49 kr."}; }
+  else { a.metode="—"; a.frakt="—"; PNR[postnr]={t:"nei",s:"Vi leverer dessverre ikke hit ennå."}; }
+  persistDemo(); drawAreas();
+  toast(a.metode==="—"?"Slått av. Sjekk postnummeret på forsiden.":a.metode+" er satt.");
+};
+
+const _drawSettingsP4=drawSettings;
+drawSettings=function(){
+  _drawSettingsP4();
+  if(setTab!=="epost") return;
+  const body=document.getElementById("setBody"); if(!body) return;
+  body.innerHTML=`<div class="panel"><h3>SMTP</h3>
+    <p class="small">Synlig flyt. Ingen utsending her.</p>
+    <div class="setgrid">
+      <div class="field"><label>SMTP-server</label><input value="smtp.gmail.com"></div>
+      <div class="field"><label>Port</label><input value="465"></div>
+      <div class="field"><label>Avsendernavn</label><input value="Havkassen"></div>
+      <div class="field"><label>Admin-varsling</label><input value="drift@havkassen.no"></div>
+    </div></div>
+    <div class="panel" style="margin-top:14px"><h3>Ni maler</h3>
+      <p class="small">Samme sett som i originalen. På/av og rediger. «Sett i kø» skriver til systemloggen, sender ikke.</p>
+      ${MAIL_TEMPLATES.map(t=>`<div class="mailtpl">
+        <label class="toggle" style="margin:0"><input type="checkbox" ${t.on?"checked":""} onchange="toggleMail('${t.id}',this.checked)"><span class="toggle-track"><i></i></span></label>
+        <div class="mt-name"><b>${t.n}</b><div class="small">${t.emne}</div></div>
+        <button class="btn ghost" style="padding:6px 12px;min-height:32px" onclick="editMail('${t.id}')">Rediger</button>
+        <button class="btn ghost" style="padding:6px 12px;min-height:32px" onclick="queueMail('${t.id}')">Sett i kø</button>
+      </div>`).join("")}
+    </div>`;
+};
+
+window.toggleMail=function(id,on){
+  const t=MAIL_TEMPLATES.find(x=>x.id===id); if(!t) return;
+  t.on=!!on; persistDemo();
+};
+window.editMail=function(id){
+  const t=MAIL_TEMPLATES.find(x=>x.id===id); if(!t) return;
+  openDrawer(`<h2>${esc(t.n)}</h2>
+    <div class="field"><label>Emne</label><input id="f-emne" value="${esc(t.emne)}"></div>
+    <div class="field"><label>Tekst</label><textarea id="f-kropp">${esc(t.kropp)}</textarea></div>
+    <div class="drawer-actions">
+      <button class="btn" onclick="saveMail('${t.id}')">Lagre mal</button>
+      <button class="btn ghost" onclick="closeDrawer()">Avbryt</button>
+    </div>`);
+};
+window.saveMail=function(id){
+  const t=MAIL_TEMPLATES.find(x=>x.id===id); if(!t) return;
+  t.emne=document.getElementById("f-emne").value.trim()||t.emne;
+  t.kropp=document.getElementById("f-kropp").value;
+  persistDemo(); closeDrawer(); drawSettings();
+  toast("Mal lagret.");
+};
+window.queueMail=function(id){
+  const t=MAIL_TEMPLATES.find(x=>x.id===id); if(!t) return;
+  if(!t.on){ toast("Malen er av. Slå den på først."); return; }
+  LOG_TABLE.unshift({tid:stampNow(),type:"E-post",melding:"Mal «"+t.n+"» i kø. Ingen e-post går ut i visningen.",niva:"ok"});
+  persistDemo();
+  if(typeof drawLogs==="function") drawLogs();
+  toast("I kø. Ingen utsending.");
+};
+
+const _persistP4=persistDemo;
+persistDemo=function(){
+  _persistP4();
+  try{
+    const raw=JSON.parse(localStorage.getItem(DEMO_KEY)||"{}");
+    raw.mailTemplates=MAIL_TEMPLATES;
+    raw.orders=ORDERS; raw.members=MEMBERS_TABLE; raw.areas=AREAS_TABLE;
+    localStorage.setItem(DEMO_KEY, JSON.stringify(raw));
+  }catch(e){}
+};
+
+const _setAdminP4=window.setAdminTab;
+window.setAdminTab=function(t){
+  _setAdminP4(t);
+  if(t==="bestillinger"){ ensureOrderDepth(); drawOrderFilters(); drawOrders(); }
+  if(t==="abonnementer"){ ensureMemberBoxes(); drawMembers(); }
+  if(t==="omrader") drawAreas();
+  if(t==="innstillinger") drawSettings();
+};
+
+(function bootP4(){
+  AREA_EXTRA.forEach(([postnr,sted,fylke,metode,frakt])=>{
+    if(!AREAS_TABLE.some(a=>a.postnr===postnr)) AREAS_TABLE.push({postnr,sted,fylke,metode,frakt});
+  });
+  try{
+    const d=JSON.parse(localStorage.getItem(DEMO_KEY)||"null");
+    if(d && Array.isArray(d.mailTemplates) && d.mailTemplates.length){
+      MAIL_TEMPLATES.length=0; d.mailTemplates.forEach(x=>MAIL_TEMPLATES.push(x));
+    }
+  }catch(e){}
+  ensureOrderDepth();
+  ensureMemberBoxes();
+  if(typeof drawOrderFilters==="function") drawOrderFilters();
+  if(typeof drawOrders==="function") drawOrders();
+  if(typeof drawMembers==="function") drawMembers();
+  if(typeof drawAreas==="function") drawAreas();
 })();
 
 </script>
